@@ -21,15 +21,27 @@ def sredisce(lst):
 
 
 class Figura():
-    def __init__(self, canvas, id_figure, polozaj, ekipa):
+    def __init__(self, canvas, id_figure, koordinate_figure, ekipa):
         self.canvas = canvas
         self.id_figure = id_figure
-        self.polozaj = polozaj  #id polja, na katerem se nahaja
-        self.ekipa = ekipa #modri in rdeci
+        self.koordinate_figure = koordinate_figure  #polozaj v koordinatah
+        self.polje_pod_figuro = 'zacetno'
+        self.ekipa = ekipa #zajci in lisice
 
-        #lisice:
-        self.lisica = PhotoImage('file=lisica.gif')
-        #self.id_lisica1 = self.canvas.create_image()
+
+
+    def __repr__(self):
+        return('Id figure:{}, polozaj:{}, ekipa: {}'.format(self.id_figure, self.polozaj, self.ekipa))
+
+
+class Igra():
+    def __init__(self, canvas):
+        self.canvas = canvas
+
+
+
+
+
 
 
 
