@@ -31,7 +31,7 @@ class Figura():
 
 
     def __repr__(self):
-        return('Id figure:{}, polozaj:{}, ekipa: {}'.format(self.id_figure, self.polozaj, self.ekipa))
+        return('Id figure:{}, polozaj:{}, ekipa: {}'.format(self.id_figure, self.koordinate_figure, self.ekipa))
 
 
 class Igra():
