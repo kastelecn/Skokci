@@ -9,6 +9,7 @@ class Gui():
 
     def __init__(self, master):
 
+        self.oznacen = False #ali smo izbrali figure za premik
         self.igralec_na_potezi = 'Lisice' #vedno začnejo lisice
         self.trenutna_figura = None #kliknjena figura
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
@@ -25,7 +26,10 @@ class Gui():
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      bg = 'white')
         self.plosca.grid()
-        self.oznacen = False #ali smo izbrali figure za premik
+
+        #gumb za igranje
+        self.plosca.bind("<Button-1>", self.premik)
+        
         #IGRALNA PLOSCA
         #nastavek za polja
         self.seznam_id_polj = []
@@ -56,7 +60,7 @@ class Gui():
         for i in self.lisice_id:
             lisica = Figura(self.plosca, i, sredisce(self.plosca.coords(i)), 'Lisice')
             self.lisice.append(lisica)
-        print(self.lisice)
+        #print(self.lisice)
     #ustvarimo lisice
     def ustvari_lisice(self):
 
@@ -77,7 +81,7 @@ class Gui():
         self.seznam_polj[13].namen = 'vstopno_b'
         self.seznam_polj[7].namen = 'zmagovalec_a'
         self.seznam_polj[6].namen = 'zmagovalec_b'
-        print(self.seznam_polj)
+        #print(self.seznam_polj)
 
     def zapri_okno(self, master):
         # """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
@@ -154,36 +158,58 @@ class Gui():
 
         return self.seznam_id_polj
 
-        self.plsoca.bind("<Button-1>", self.premik(event, self.oznacen))
+        
 
-    def premik(self, oznacen, event):
+    def premik(self, event):
+        print ('vem da bi neki mogu')
         x,y = event.x, event.y
-        if oznacen == False:
-            self.trenutna_figura = self.oznacena_figura(x,y, self.igralec_na_potezi)
+        print (x,y)
+        if self.oznacen == False:
+            self.trenutna_figura = self.oznacena_figura(x ,y, self.igralec_na_potezi)
             if self.trenutna_figura != None: #če smo klinkili na figuro
                 self.oznacen = True
-                self.pokazi_veljavne_poteze(figura)
+                self.pokazi_veljavne_poteze(self.trenutna_figura)
         else:
-            premakni_figuro(x,y)
+            self.premakni_figuro(self.trenutna_figura, x, y)
 
     def pokazi_veljavne_poteze(self, figura):
         pass
 
     def oznacena_figura(self, x, y, igralec_na_potezi):
-        if igralec_na_potezi == 'Lisice':
+        if self.igralec_na_potezi == 'Lisice':
             for i in self.lisice:
                 f1, f2 = i.koordinate_figure
-                if (f1 - x)^2 + (f2 - y)^2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v lisice
+                if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v lisice
+                    print(x, y, 'koordinte miške')
+                    print (f1,f2, 'koordinate kjer so fiure')
+                    print (int((f1 - x)**2 + (f2 - y)**2), 'kvadrat razdalje')
                     return i
+                #else:
+                    
         if igralec_na_potezi == 'Zajci':
             for i in self.zajci:
                 f1, f2 = i.koordinate_figure
-                if (f1 - x)^2 + (f2 - y)^2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v zajci
+                if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v zajce
                     return i
-    def premakni_figuro(self, x, y):
+
+                
+    def premakni_figuro(self, figura, x, y):
+        print(figura)
         for polje in self.seznam_polj:
+            print (polje)
             f1, f2 = polje.koordinate
-            if (f1 - x) ^ 2 + (f2 - y) ^ 2 <= (Gui.r)^2:
+            
+            if (f1 - x) ** 2 + (f2 - y) ** 2 <= (Gui.r)**2:
+                self.plosca.move(figura.id_figure, f1, f2)
+                print('premaknil figuro na {},{}'.format(f1, f2))
+                self.oznacen = False
+                
+                
+                figura.koordinate_figure = f1, f2
+
+                print (figura)
+                return figura
+                
 
 
 
