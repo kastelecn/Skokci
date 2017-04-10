@@ -39,7 +39,12 @@ class Igra():
         self.canvas = canvas
 
 
-
+class Clovek():
+    def __init__(self):
+        pass
+class Robot():
+    def __init__(self):
+        pass
 
 
 
