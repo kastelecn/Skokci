@@ -20,7 +20,7 @@ class Gui():
         menu_igra = Menu(menu)
         menu.add_cascade(label="Igra", menu=menu_igra)
         menu_igra.add_command(label="Nova igra",
-                              command=self.zacni_igro)
+                              command=self.zacni_novo_igro)
         # Igralno območje
         self.plosca = Canvas(master,width=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
@@ -52,7 +52,8 @@ class Gui():
         self.spremeni_posebna_polja()
 
 
-        #postavljanje figur
+        #POSTAVLJANJE FIGUR
+        #1. lisice!!!
         self.lisica = PhotoImage('file=lisica.gif')
         self.lisice_id = []
         self.lisice = []
@@ -61,7 +62,8 @@ class Gui():
             lisica = Figura(self.plosca, i, sredisce(self.plosca.coords(i)), 'Lisice')
             self.lisice.append(lisica)
         #print(self.lisice)
-    #ustvarimo lisice
+
+
     def ustvari_lisice(self):
 
         for i in range(5):
@@ -70,6 +72,28 @@ class Gui():
 
             lisica_id = self.plosca.create_oval(Gui.ROB + (i+1)/6 * Gui.VELIKOST_STRANICE_PLOŠČE - 10, Gui.ROB /2 -10, Gui.ROB + (i+1)/6 * Gui.VELIKOST_STRANICE_PLOŠČE + 10, Gui.ROB /2 +10  ,fill = 'orange')
             self.lisice_id.append(lisica_id)
+
+    # 1. zajci!!!
+        self.zajec = PhotoImage('file=zajec.gif')
+        self.zajci_id = []
+        self.zajci = []
+        self.ustvari_zajce()
+        for i in self.zajci_id:
+            zajec = Figura(self.plosca, i, sredisce(self.plosca.coords(i)), 'Zajci')
+            self.zajci.append(zajec)
+            # print(self.lisice)
+
+    def ustvari_zajce(self):
+
+        for i in range(5):
+            # ne rise zajcev tako da narisem krogce
+            # zajec_id = self.plosca.create_image(Gui.ROB + (i+1)/5 * Gui.VELIKOST_STRANICE_PLOŠČE, Gui.ROB ,image=self.zajec)
+
+            zajec_id = self.plosca.create_oval(Gui.ROB + (i + 1) / 6 * Gui.VELIKOST_STRANICE_PLOŠČE - 10,
+                                               Gui.ROB + Gui.VELIKOST_STRANICE_PLOŠČE + Gui.ROB / 2 - 10,
+                                               Gui.ROB + (i + 1) / 6 * Gui.VELIKOST_STRANICE_PLOŠČE + 10,
+                                               Gui.ROB + Gui.VELIKOST_STRANICE_PLOŠČE + Gui.ROB / 2 + 10, fill='grey')
+            self.zajci_id.append(zajec_id)
 
 
     #dodajanje posebnih polj(zmagovalna, vstopna)
@@ -88,7 +112,7 @@ class Gui():
         # Kasneje bo tu treba še kaj narediti
         master.destroy()
 
-    def zacni_igro(self):
+    def zacni_novo_igro(self):
         pass
 
     def narisi_polja(self):
@@ -181,12 +205,12 @@ class Gui():
                 f1, f2 = i.koordinate_figure
                 if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v lisice
                     print(x, y, 'koordinte miške')
-                    print (f1,f2, 'koordinate kjer so fiure')
+                    print (f1,f2, 'koordinate kjer so figure')
                     print (int((f1 - x)**2 + (f2 - y)**2), 'kvadrat razdalje')
                     return i
                 #else:
                     
-        if igralec_na_potezi == 'Zajci':
+        if self.igralec_na_potezi == 'Zajci':
             for i in self.zajci:
                 f1, f2 = i.koordinate_figure
                 if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v zajce
@@ -198,14 +222,21 @@ class Gui():
         for polje in self.seznam_polj:
             print (polje)
             f1, f2 = polje.koordinate
-            
+
+            if (f1, f2) == (figura.koordinate_figure):
+                polje.zasedenost = False
+
             if (f1 - x) ** 2 + (f2 - y) ** 2 <= (Gui.r)**2:
-                self.plosca.move(figura.id_figure, f1, f2)
+                self.plosca.coords(figura.id_figure, f1 - 10, f2 - 10,  f1 + 10, f2 + 10)
                 print('premaknil figuro na {},{}'.format(f1, f2))
                 self.oznacen = False
-                
+                polje.zasedenost = figura.ekipa
                 
                 figura.koordinate_figure = f1, f2
+                if self.igralec_na_potezi == 'Lisice':
+                    self.igralec_na_potezi = 'Zajci'
+                else:
+                    self.igralec_na_potezi = 'Lisice'
 
                 print (figura)
                 return figura
