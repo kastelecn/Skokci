@@ -12,6 +12,7 @@ class Gui():
         self.oznacen = False #ali smo izbrali figure za premik
         self.igralec_na_potezi = 'Lisice' #vedno začnejo lisice
         self.trenutna_figura = None #kliknjena figura
+        self.zacetni_seznam_polj = [] #bomo potrebovali ob začetku nove igre
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
         # Glavni menu
         menu = Menu(master)
@@ -21,6 +22,20 @@ class Gui():
         menu.add_cascade(label="Igra", menu=menu_igra)
         menu_igra.add_command(label="Nova igra",
                               command=self.zacni_novo_igro)
+        menu_igra.add_command(label="Igram s clovekom",
+                              command=lambda:self.zacni_novo_igro(Clovek(self), Clovek(self)))
+        menu_igra.add_command(label="Nimam pravega soigralca",
+                              command=lambda:self.zacni_novo_igro(Clovek(self), Robot(self)))
+        menu_igra.add_command(label="Dolgcas mi je in ne da se mi igrat",
+                              command=lambda:self.zacni_novo_igro(Robot(self), Robot(self)))
+
+
+        #Začetni napisi in obvestila kdo je na vrsti
+        self.pozdrav = StringVar(master, value="Kdo bo nov zmagovalec in kdo nova zguba? Če vas to zanima, v meniju izberite Nova igra")
+        self.moderator = Label(master, textvariable=self.pozdrav).grid(row=0, column=0)
+
+
+
         # Igralno območje
         self.plosca = Canvas(master,width=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
@@ -112,8 +127,9 @@ class Gui():
         # Kasneje bo tu treba še kaj narediti
         master.destroy()
 
-    def zacni_novo_igro(self):
+    def zacni_novo_igro(self, lisice, zajci):
         pass
+
 
     def narisi_polja(self):
         # oglišča
@@ -235,9 +251,10 @@ class Gui():
                 figura.koordinate_figure = f1, f2
                 if self.igralec_na_potezi == 'Lisice':
                     self.igralec_na_potezi = 'Zajci'
+
                 else:
                     self.igralec_na_potezi = 'Lisice'
-
+                self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
                 print (figura)
                 return figura
                 
