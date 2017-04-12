@@ -9,6 +9,7 @@ class Gui():
 
     def __init__(self, master):
 
+
         self.oznacen = False #ali smo izbrali figure za premik
         self.igralec_na_potezi = 'Lisice' #vedno začnejo lisice
         self.trenutna_figura = None #kliknjena figura
@@ -41,7 +42,7 @@ class Gui():
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      bg = 'white')
         self.plosca.grid()
-
+        self.igra = Igra(self.plosca)
         #gumb za igranje
         self.plosca.bind("<Button-1>", self.premik)
         
@@ -113,13 +114,13 @@ class Gui():
 
     #dodajanje posebnih polj(zmagovalna, vstopna)
     def spremeni_posebna_polja(self):
-        self.seznam_polj[0].namen = 'vstopno_a'
+        self.seznam_polj[0].namen = 'vstopno_zajec'
 
-        self.seznam_polj[12].namen = 'vstopno_a'
-        self.seznam_polj[1].namen = 'vstopno_b'
-        self.seznam_polj[13].namen = 'vstopno_b'
-        self.seznam_polj[7].namen = 'zmagovalec_a'
-        self.seznam_polj[6].namen = 'zmagovalec_b'
+        self.seznam_polj[12].namen = 'vstopno_zajec'
+        self.seznam_polj[1].namen = 'vstopno_lisica'
+        self.seznam_polj[13].namen = 'vstopno_lisica'
+        self.seznam_polj[7].namen = 'zmagovalec_je_zajec'
+        self.seznam_polj[6].namen = 'zmagovalec_je_lisica'
         #print(self.seznam_polj)
 
     def zapri_okno(self, master):
@@ -220,9 +221,9 @@ class Gui():
             for i in self.lisice:
                 f1, f2 = i.koordinate_figure
                 if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v lisice
-                    print(x, y, 'koordinte miške')
-                    print (f1,f2, 'koordinate kjer so figure')
-                    print (int((f1 - x)**2 + (f2 - y)**2), 'kvadrat razdalje')
+                    #print(x, y, 'koordinte miške')
+                    #print (f1,f2, 'koordinate kjer so figure')
+                    #print (int((f1 - x)**2 + (f2 - y)**2), 'kvadrat razdalje')
                     return i
                 #else:
                     
@@ -234,30 +235,34 @@ class Gui():
 
                 
     def premakni_figuro(self, figura, x, y):
-        print(figura)
+        #print(figura)
         for polje in self.seznam_polj:
-            print (polje)
+            #print (polje)
             f1, f2 = polje.koordinate
 
             if (f1, f2) == (figura.koordinate_figure):
-                polje.zasedenost = False
+                polje.zasedeno = False
 
             if (f1 - x) ** 2 + (f2 - y) ** 2 <= (Gui.r)**2:
-                self.plosca.coords(figura.id_figure, f1 - 10, f2 - 10,  f1 + 10, f2 + 10)
-                print('premaknil figuro na {},{}'.format(f1, f2))
-                self.oznacen = False
-                polje.zasedenost = figura.ekipa
-                
-                figura.koordinate_figure = f1, f2
-                if self.igralec_na_potezi == 'Lisice':
-                    self.igralec_na_potezi = 'Zajci'
+                if self.igra.veljaven_premik(figura, polje, self.seznam_polj):
 
-                else:
-                    self.igralec_na_potezi = 'Lisice'
-                self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
-                print (figura)
-                return figura
-                
+                    self.plosca.coords(figura.id_figure, f1 - 10, f2 - 10,  f1 + 10, f2 + 10)
+                    print('premaknil figuro na {},{}'.format(f1, f2))
+                    self.oznacen = False
+                    polje.zasedeno = figura.ekipa
+                    figura.id_polja_pod_figuro = polje.id_polja
+
+                    figura.koordinate_figure = f1, f2
+                    if self.igralec_na_potezi == 'Lisice':
+                        self.igralec_na_potezi = 'Zajci'
+
+                    else:
+                        self.igralec_na_potezi = 'Lisice'
+                    self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
+                    print(polje)
+                    print (figura)
+                    return figura
+
 
 
 
