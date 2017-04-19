@@ -4,7 +4,7 @@ from Potek_igre import *
 
 class Gui():
     VELIKOST_STRANICE_PLOŠČE = 400
-    ROB = 200
+    ROB = 100
     r = 10
 
     def __init__(self, master):
@@ -32,7 +32,7 @@ class Gui():
 
 
         #Začetni napisi in obvestila kdo je na vrsti
-        self.pozdrav = StringVar(master, value="Kdo bo nov zmagovalec in kdo nova zguba? Če vas to zanima, v meniju izberite Nova igra")
+        self.pozdrav = StringVar(master, value="Kdo bo nov zmagovalec in kdo nova zguba?")
         self.moderator = Label(master, textvariable=self.pozdrav).grid(row=0, column=0)
 
 
@@ -42,6 +42,7 @@ class Gui():
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      bg = 'white')
         self.plosca.grid()
+        self.izberi_nova_igra = self.plosca.create_text(Gui.ROB + 1/2*Gui.VELIKOST_STRANICE_PLOŠČE, 1/4*Gui.ROB, font=('Purisa', 20), text='V MENIJU IZBERI NOVA IGRA', fill='red')
 
         #gumb za igranje
         self.plosca.bind("<Button-1>", self.premik)
@@ -81,6 +82,7 @@ class Gui():
 
         self.igra = Igra(self.plosca,(Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOŠČE, Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOŠČE),
                          self.seznam_polj)
+
     def daj_polja_v_razred(self):
         for i in self.seznam_id_polj:
             polje = Polje(self.plosca, i, sredisce(self.plosca.coords(i)))
@@ -123,12 +125,13 @@ class Gui():
     #dodajanje posebnih polj(zmagovalna, vstopna)
     def spremeni_posebna_polja(self):
         self.seznam_polj[0].namen = 'vstopno_zajec'
-
         self.seznam_polj[12].namen = 'vstopno_zajec'
         self.seznam_polj[1].namen = 'vstopno_lisica'
         self.seznam_polj[13].namen = 'vstopno_lisica'
         self.seznam_polj[7].namen = 'zmagovalec_je_zajec'
+        self.plosca.itemconfig(self.seznam_polj[7].id_polja, fill='IndianRed1')
         self.seznam_polj[6].namen = 'zmagovalec_je_lisica'
+        self.plosca.itemconfig(self.seznam_polj[6].id_polja, fill='IndianRed1')
         #print(self.seznam_polj)
 
     def zapri_okno(self, master):
@@ -138,10 +141,16 @@ class Gui():
 
     def zacni_novo_igro(self):
         self.igralec_na_potezi = 'Lisice'
+        self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
         self.igra.igra_poteka = True
+        self.plosca.delete(self.izberi_nova_igra)
+
         for i in self.seznam_polj:
             i.zasedenost = False
-            self.plosca.itemconfig(i.id_polja, fill='white')
+            if i.namen == 'zmagovalec_je_zajec' or i.namen == 'zmagovalec_je_lisica':
+                self.plosca.itemconfig(i.id_polja, fill='IndianRed1')
+            else:
+                self.plosca.itemconfig(i.id_polja, fill='white')
 
         for lisica in self.lisice:
             if lisica.id_polja_pod_figuro != None:
@@ -168,6 +177,20 @@ class Gui():
         (x_a2, y_a2) = (Gui.ROB + Gui.VELIKOST_STRANICE_PLOŠČE, Gui.ROB + Gui.VELIKOST_STRANICE_PLOŠČE)
         (x_b1, y_b1) = (Gui.ROB, Gui.ROB)
         (x_b2, y_b2) = (Gui.ROB + Gui.VELIKOST_STRANICE_PLOŠČE, Gui.ROB)
+
+        #krogci za označitev posebnih polj
+        self.plosca.create_oval(x_a1 - 3/2 * Gui.r, y_a1 - 3/2 * Gui.r,
+                                x_a1 + 3/2 * Gui.r, y_a1 + 3/2 * Gui.r,
+                                fill='cyan2')
+        self.plosca.create_oval(x_a2 - 3/2 * Gui.r, y_a2 - 3/2 * Gui.r,
+                                x_a2 + 3/2 * Gui.r, y_a2 + 3/2 * Gui.r,
+                                fill='cyan2')
+        self.plosca.create_oval(x_b1 - 3/2 * Gui.r, y_b1 - 3/2 * Gui.r,
+                                x_b1 + 3/2 * Gui.r, y_b1 + 3/2 * Gui.r,
+                                fill='cyan2')
+        self.plosca.create_oval(x_b2 - 3/2 * Gui.r, y_b2 - 3/2 * Gui.r,
+                                x_b2 + 3/2 * Gui.r, y_b2 + 3/2 * Gui.r,
+                                fill='cyan2')
 
         # zunanji kvadrat
         # vodoravno
@@ -224,12 +247,10 @@ class Gui():
                                       fill="white")
 
         self.seznam_id_polj.append(id1)
-
         self.seznam_id_polj.append(id2)
-
         return self.seznam_id_polj
 
-        
+
 
     def premik(self, event):
         if self.igra.igra_poteka:
@@ -241,7 +262,13 @@ class Gui():
                     self.oznacen = True
                     self.igra.pokazi_veljavne_poteze(self.trenutna_figura)
             else:
-                self.premakni_figuro(self.trenutna_figura, x, y)
+                self.potencialna_figura = self.oznacena_figura(x, y, self.igralec_na_potezi)
+                if self.potencialna_figura != None:
+                    self.igra.skrij_veljavne_poteze(self.trenutna_figura)
+                    self.trenutna_figura = self.potencialna_figura
+                    self.igra.pokazi_veljavne_poteze(self.trenutna_figura)
+                else:
+                    self.premakni_figuro(self.trenutna_figura, x, y)
 
 
     def oznacena_figura(self, x, y, igralec_na_potezi):
@@ -254,21 +281,22 @@ class Gui():
                     #print (int((f1 - x)**2 + (f2 - y)**2), 'kvadrat razdalje')
                     return i
                 #else:
-                    
+
         if self.igralec_na_potezi == 'Zajci':
             for i in self.zajci:
                 f1, f2 = i.koordinate_figure
                 if (f1 - x)**2 + (f2 - y)**2 <= 100: #100 je kvadrat polmera krogca, bova spremenili v zajce
                     return i
 
-                
+
     def premakni_figuro(self, figura, x, y):
         #print(figura)
+        trenutni_polozaj_figure = figura.koordinate_figure
         for polje in self.seznam_polj:
             #print (polje)
             f1, f2 = polje.koordinate
 
-            if (f1, f2) == (figura.koordinate_figure):
+            if (f1, f2) == (trenutni_polozaj_figure):
                 polje.zasedeno = False
 
             if (f1 - x) ** 2 + (f2 - y) ** 2 <= (Gui.r)**2:
@@ -279,23 +307,26 @@ class Gui():
                     self.oznacen = False
                     polje.zasedeno = figura.ekipa
                     self.igra.skrij_veljavne_poteze(figura)
+
                     figura.id_polja_pod_figuro = polje.id_polja
-
-
-
                     figura.koordinate_figure = f1, f2
 
-                    self.igra.ali_je_zmaga(figura, self.seznam_polj, polje)
+                    #if self.igra.ali_je_nasprotnik_obkoljen(figura, polje, self.zajci, self.lisice) != None:
+                    #    self.igra.ubij_obkoljenega(self.igra.ali_je_nasprotnik_obkoljen(figura, polje, self.zajci, self.lisice), Gui.r)
+
+                    if self.igra.ali_je_zmaga(figura, self.seznam_polj, polje):
+                        self.pozdrav.set('Bravo!')
 
                     if self.igralec_na_potezi == 'Lisice':
                         self.igralec_na_potezi = 'Zajci'
 
                     else:
                         self.igralec_na_potezi = 'Lisice'
-                    self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
+                    if self.igra.igra_poteka:
+                        self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igralec_na_potezi))
                     print(polje)
                     print (figura)
-                    return figura
+        return figura
 
 
 
