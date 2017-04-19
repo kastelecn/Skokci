@@ -40,6 +40,7 @@ class Figura():
         return('Id figure:{}, polozaj:{}, ekipa: {}, zacetne koordinate:{}'.format(self.id_figure, self.koordinate_figure, self.ekipa, self.zacetne_koordinate))
 
 
+
 class Igra():
     def __init__(self, canvas, koordinate_sredisca, seznam_polj):
         self.canvas = canvas
@@ -79,24 +80,58 @@ class Igra():
             self.igra_poteka = False
             je_zmaga = True
         if je_zmaga:
-            self.canvas.create_text(self.koordinate_sredisca, text='ZMAGA ZA {}'.format(zmagovalec), fill='red')
+            self.canvas.create_text(self.koordinate_sredisca, font=('Purisa', 20), text='ZMAGA ZA {}'.format(zmagovalec), fill='red')
         return je_zmaga
 
 
     def pokazi_veljavne_poteze(self, figura):
         for polje in self.seznam_polj:
             if figura.id_polja_pod_figuro in polje.sosedi and polje.zasedeno == False:
-                self.canvas.itemconfig(polje.id_polja, fill='green')
+                self.canvas.itemconfig(polje.id_polja, fill='SeaGreen2')
 
     def skrij_veljavne_poteze(self, figura):
         for polje in self.seznam_polj:
             if figura.id_polja_pod_figuro in polje.sosedi:
                 self.canvas.itemconfig(polje.id_polja, fill='white')
 
-    def ali_je_nasprotnik_obkoljen(self):
-        pass
-    def ubij_obkoljenega(self):
-        pass
+    #Preveri, ali je kakšen nasprotnik obkoljen in vrne None ali pa obkoljeno figuro
+    # def ali_je_nasprotnik_obkoljen(self, figura, polje, zajci, lisice):
+    #     sosednji_nasprotniki = []
+    #     if figura.ekipa == 'Lisice':
+    #         for zajcek in zajci:
+    #             if zajcek.id_polja_pod_figuro in polje.sosedi:
+    #                 sosednji_nasprotniki.append(zajcek)
+    #     else:
+    #         for lisica in lisice:
+    #             if lisica.id_polja_pod_figuro in polje.sosedi:
+    #                 sosednji_nasprotniki.append(lisica)
+    #     for nasprotnik in sosednji_nasprotniki:
+    #         for polje in self.seznam_polj:
+    #             if polje.id_polja == nasprotnik.id_polja_pod_figuro:
+    #                 nasprotnikovo_polje = polje
+    #                 continue
+    #         for sosed in nasprotnikovo_polje.sosedi:
+    #             sosed = Polje.najdi_polje_z_idjem(self, sosed, self.seznam_polj)
+    #             je_obkoljen = True
+    #             if sosed.zasedeno == False:
+    #                 je_obkoljen = False
+    #                 continue
+    #             if figura.ekipa == 'Zajci': #preveri če je na tem sosednjem polju lisica
+    #                 for lisica in lisice:
+    #                     if lisica.id_polja_pod_figuro == sosed.id_polja:
+    #                         je_obkoljen = False
+    #             if figura.ekipa == 'Lisice':
+    #                 for zajec in zajci:
+    #                     if zajec.id_polja_pod_figuro == sosed.id_polja:
+    #                         je_obkoljen = False
+    #         if je_obkoljen:
+    #             return nasprotnik
+    #
+    #
+    # #Obkoljenega prisiljo vrne na začetno polje in sprosti polje kjer je bil prej
+    # def ubij_obkoljenega(self, figura, r):
+    #     x, y = figura.zacetne_koordinate
+    #     self.canvas.coords(figura.id_figure, x - r, y - r, x + r, y + r)
 
 class Clovek():
     def __init__(self):
