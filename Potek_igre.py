@@ -41,8 +41,11 @@ class Figura():
 
 
 class Igra():
-    def __init__(self, canvas):
+    def __init__(self, canvas, koordinate_sredisca, seznam_polj):
         self.canvas = canvas
+        self.igra_poteka = False
+        self.koordinate_sredisca = koordinate_sredisca
+        self.seznam_polj = seznam_polj
 
     def veljaven_premik(self, figura, polje, seznam_polj):
         print (polje)
@@ -62,15 +65,38 @@ class Igra():
         print('neki je narobe s sosedi')
         return False
 
-    def ali_je_zmaga(self, figura):
-        if figura.ekipa == 'Lisice' and polje.najdi_polje_z_idjem(figura.id_polja_pod_figuro, Gui.seznam_polj).namen == 'zmagovalec_je_lisica':
+    def ali_je_zmaga(self, figura, seznam_polj, polje):
+        je_zmaga = False
+        if figura.ekipa == 'Lisice' and polje.najdi_polje_z_idjem(figura.id_polja_pod_figuro, seznam_polj).namen == 'zmagovalec_je_lisica':
             print('Zmagala lisica')
-            return True
+            zmagovalec = 'LISICE'
+            self.igra_poteka = False
+            je_zmaga = True
+
+        if figura.ekipa == 'Zajci' and polje.najdi_polje_z_idjem(figura.id_polja_pod_figuro, seznam_polj).namen == 'zmagovalec_je_zajec':
+            print('Zmagal zajec')
+            zmagovalec = 'ZAJCE'
+            self.igra_poteka = False
+            je_zmaga = True
+        if je_zmaga:
+            self.canvas.create_text(self.koordinate_sredisca, text='ZMAGA ZA {}'.format(zmagovalec), fill='red')
+        return je_zmaga
 
 
+    def pokazi_veljavne_poteze(self, figura):
+        for polje in self.seznam_polj:
+            if figura.id_polja_pod_figuro in polje.sosedi and polje.zasedeno == False:
+                self.canvas.itemconfig(polje.id_polja, fill='green')
 
+    def skrij_veljavne_poteze(self, figura):
+        for polje in self.seznam_polj:
+            if figura.id_polja_pod_figuro in polje.sosedi:
+                self.canvas.itemconfig(polje.id_polja, fill='white')
 
-
+    def ali_je_nasprotnik_obkoljen(self):
+        pass
+    def ubij_obkoljenega(self):
+        pass
 
 class Clovek():
     def __init__(self):
