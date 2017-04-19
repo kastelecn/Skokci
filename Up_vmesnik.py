@@ -42,7 +42,7 @@ class Gui():
                                      height=Gui.VELIKOST_STRANICE_PLOŠČE + 2 * Gui.ROB,
                                      bg = 'white')
         self.plosca.grid()
-        self.igra = Igra(self.plosca)
+
         #gumb za igranje
         self.plosca.bind("<Button-1>", self.premik)
         
@@ -53,10 +53,9 @@ class Gui():
         self.seznam_povezav = [(0,2), (2,4),(4,6),(6,8),(8,10), (10,12), (12,19), (19,17), (15,13), (17,15), (13,11), (11,9), (9,7), (7,5), (5,3), (3,1), (1,14), (14,16), (16,18), (18,0), (20,21), (21,22), (22,26), (26,25), (25,24), (24,23), (23,27), (27,20), (20,1), (21,5), (22,13), (25,12), (24,8), (23,0)]
 
         self.narisi_polja()
+        self.daj_polja_v_razred()
         #narisana polja damo v razred Polje
-        for i in self.seznam_id_polj:
-            polje = Polje(self.plosca, i, sredisce(self.plosca.coords(i)))
-            self.seznam_polj.append(polje)
+
 
         #risanje povezav
         for (p1, p2) in self.seznam_povezav:
@@ -74,10 +73,19 @@ class Gui():
         self.lisice_id = []
         self.lisice = []
         self.ustvari_lisice()
+
         for i in self.lisice_id:
             lisica = Figura(self.plosca, i, sredisce(self.plosca.coords(i)), 'Lisice')
             self.lisice.append(lisica)
         #print(self.lisice)
+
+        self.igra = Igra(self.plosca,(Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOŠČE, Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOŠČE),
+                         self.seznam_polj)
+    def daj_polja_v_razred(self):
+        for i in self.seznam_id_polj:
+            polje = Polje(self.plosca, i, sredisce(self.plosca.coords(i)))
+            self.seznam_polj.append(polje)
+        return self.seznam_polj
 
 
     def ustvari_lisice(self):
@@ -128,8 +136,30 @@ class Gui():
         # Kasneje bo tu treba še kaj narediti
         master.destroy()
 
-    def zacni_novo_igro(self, lisice, zajci):
-        pass
+    def zacni_novo_igro(self):
+        self.igralec_na_potezi = 'Lisice'
+        self.igra.igra_poteka = True
+        for i in self.seznam_polj:
+            i.zasedenost = False
+            self.plosca.itemconfig(i.id_polja, fill='white')
+
+        for lisica in self.lisice:
+            if lisica.id_polja_pod_figuro != None:
+                lisica.koordinate_figure = lisica.zacetne_koordinate
+                lisica.id_polja_pod_figuro = None
+                (z1, z2) = lisica.zacetne_koordinate
+                self.plosca.coords(lisica.id_figure, z1 - Gui.r, z2 - Gui.r, z1 + Gui.r, z2 + Gui.r)
+
+        for zajec in self.zajci:
+            if zajec.id_polja_pod_figuro != None:
+                zajec.koordinate_figure = zajec.zacetne_koordinate
+                zajec.id_polja_pod_figuro = None
+                (z1, z2) = zajec.zacetne_koordinate
+                self.plosca.coords(zajec.id_figure, z1 - Gui.r, z2 - Gui.r, z1 + Gui.r, z2 + Gui.r)
+
+
+
+
 
 
     def narisi_polja(self):
@@ -202,19 +232,17 @@ class Gui():
         
 
     def premik(self, event):
-        print ('vem da bi neki mogu')
-        x,y = event.x, event.y
-        print (x,y)
-        if self.oznacen == False:
-            self.trenutna_figura = self.oznacena_figura(x ,y, self.igralec_na_potezi)
-            if self.trenutna_figura != None: #če smo klinkili na figuro
-                self.oznacen = True
-                self.pokazi_veljavne_poteze(self.trenutna_figura)
-        else:
-            self.premakni_figuro(self.trenutna_figura, x, y)
+        if self.igra.igra_poteka:
+            x,y = event.x, event.y
+            print (x,y)
+            if self.oznacen == False:
+                self.trenutna_figura = self.oznacena_figura(x ,y, self.igralec_na_potezi)
+                if self.trenutna_figura != None: #če smo klinkili na figuro
+                    self.oznacen = True
+                    self.igra.pokazi_veljavne_poteze(self.trenutna_figura)
+            else:
+                self.premakni_figuro(self.trenutna_figura, x, y)
 
-    def pokazi_veljavne_poteze(self, figura):
-        pass
 
     def oznacena_figura(self, x, y, igralec_na_potezi):
         if self.igralec_na_potezi == 'Lisice':
@@ -250,9 +278,15 @@ class Gui():
                     print('premaknil figuro na {},{}'.format(f1, f2))
                     self.oznacen = False
                     polje.zasedeno = figura.ekipa
+                    self.igra.skrij_veljavne_poteze(figura)
                     figura.id_polja_pod_figuro = polje.id_polja
 
+
+
                     figura.koordinate_figure = f1, f2
+
+                    self.igra.ali_je_zmaga(figura, self.seznam_polj, polje)
+
                     if self.igralec_na_potezi == 'Lisice':
                         self.igralec_na_potezi = 'Zajci'
 
