@@ -28,14 +28,22 @@ class Gui():
         # Podmenu za izbiro igre
         menu_igra = Menu(menu)
         menu.add_cascade(label="Igra", menu=menu_igra)
-        menu_igra.add_command(label="Nova igra",
-                              command=self.zacni_novo_igro)
-        menu_igra.add_command(label="Igram s clovekom",
-                              command=lambda:self.zacni_novo_igro(Clovek(self), Clovek(self)))
-        menu_igra.add_command(label="Nimam pravega soigralca",
-                              command=lambda:self.zacni_novo_igro(Clovek(self), Robot(self)))
-        menu_igra.add_command(label="Dolgcas mi je in ne da se mi igrat",
-                              command=lambda:self.zacni_novo_igro(Robot(self), Robot(self)))
+
+        menu_igra.add_command(label="Lisice=Človek, Zajci=Človek",
+                              command=lambda: self.zacni_novo_igro(Clovek(self),
+                                                              Clovek(self)))
+
+        menu_igra.add_command(label="Lisice=Človek, Zajci=Računalnik",
+                            command=lambda: self.zacni_novo_igro(Clovek(self),
+                                                          Racunalnik(self)))
+        menu_igra.add_command(label="Lisice=Računalnik, Zajci=Človek",
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self),
+                                                          Clovek(self)))
+        menu_igra.add_command(label="Lisice=Računalnik, Zajci=Računalnik",
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self),
+                                                          Racunalnik(self)))
+
+
 
 
         self.plosca.bind("<Button-1>", self.kliknjeno_polje)
@@ -149,7 +157,18 @@ class Gui():
                                              1 / 2 * Gui.rob + Gui.r,
                                              fill = 'orange')
             self.lisice_gid.append(lisica)
-
+        #POUDARIVA VSTOPNA VPOLJA
+        self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob - 3/2*Gui.r,
+                                Gui.rob + 3/2*Gui.r, Gui.rob + 3/2*Gui.r , fill='DeepPink3')
+        self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3/2 * Gui.r, Gui.rob - 3/2 * Gui.r,
+                                Gui.rob + Gui.velikost_stranice_plosce + 3/2 * Gui.r, Gui.rob + 3/2 * Gui.r,
+                                fill='DeepPink3')
+        self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3/2*Gui.r,
+                                Gui.rob + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
+                                fill='DeepPink3')
+        self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r,
+                                Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
+                                fill='DeepPink3')
         self.premakni_figure()
 
     def premakni_figure(self):
@@ -190,10 +209,16 @@ class Gui():
                 continue
         if self.oznacen == False:
             self.oznacena_figura = self.isci_figuro(x,y,kliknjeno_polje)
+            if self.igra.igra_poteka and self.oznacena_figura != None:
+                self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
         if self.oznacen == True and kliknjeno_polje != None:
             if self.igra.veljavna_poteza(self.oznacena_figura, kliknjeno_polje):
                 self.igra.spremeni_stanje(self.oznacena_figura, kliknjeno_polje)
+                self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'white')
                 self.premakni_figure()
+                if self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje) != None:
+                    self.naredi_napis_na_koncu(self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje))
+
                 self.oznacen = False
 
 
@@ -204,6 +229,7 @@ class Gui():
                     f1, f2 = self.zacetna_zajci[k]
                     if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
                         self.oznacen = True
+
                         return (self.igra.cakajoci_zajec, None)
             if self.igra.na_potezi == Igra.lisice:
                 for k in range(5-len(self.igra.lisice)):
@@ -222,7 +248,9 @@ class Gui():
 
 
 
-
+    def pobarvaj(self, za_pobarvat, barva):
+        for i in za_pobarvat:
+            self.plosca.itemconfig(self.polja[i][1], fill=barva)
 
     def zacni_novo_igro(self):
         self.igra.igra_poteka = True
@@ -231,11 +259,16 @@ class Gui():
         self.igra.zajci = []
         self.premakni_figure()
 
+    def naredi_napis_na_koncu(self, zmagovalec):
+        self.plosca.create_text(Gui.rob + 1/2 * Gui.velikost_stranice_plosce, Gui.rob + 1/2 * Gui.velikost_stranice_plosce, font=('Purisa', 20), text='ZMAGOVALCI SO {}'.format(zmagovalec),
+                                fill='red')
+
 
     def zapri_okno(self, master):
         # """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
         # Kasneje bo tu treba še kaj narediti
         master.destroy()
+
 
 root = Tk()
 root.title('Gui')

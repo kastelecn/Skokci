@@ -134,3 +134,23 @@ class Igra():
 
 
 
+    def mozna_polja(self, figura):
+        if figura != None:
+            za_pobarvat = []
+            if figura[0] == self.lisica or figura[0] == self.zajec:
+                for povezava in Igra.povezave:
+                    if figura[1] in povezava:
+                        (x,y) = povezava
+                        if x == figura[1]:
+                            if (y not in self.zajci) or (y not in self.lisice):
+                                za_pobarvat.append(y)
+                        else:
+                            if (y not in self.zajci) or (y not in self.lisice):
+                                za_pobarvat.append(x)
+            if figura[0] == self.cakajoca_lisica:
+                za_pobarvat.append(10)
+                za_pobarvat.append(16)
+            if figura[0] == self.cakajoci_zajec:
+                za_pobarvat.append(0)
+                za_pobarvat.append(6)
+            return za_pobarvat
