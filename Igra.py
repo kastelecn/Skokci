@@ -24,6 +24,7 @@ class Igra():
         self.lisice = [] #polja, kjer se nahajajo lisice
         self.zajci = [] #polja, kjer se nahajajo zajci
         self.igra_poteka = True
+        self.zgodovina = []
 
 
     def tip_polja(self, k):
@@ -36,6 +37,27 @@ class Igra():
         if k == 3:
             return Igra.zmagovalno_lisica
         return Igra.navadno
+
+    def shrani_pozicijo(self):
+        p = (self.lisice, self.zajci)
+        self.zgodovina.append((p, self.na_potezi))
+
+    def kopija(self):
+        kopija = Igra()
+        kopija.lisice = self.lisice
+        kopija.zajci = self.zajci
+        kopija.na_potezi = self.na_potezi
+        return kopija
+
+    def razveljavi(self):
+        ((self.lisice, self.zajci), self.na_potezi) = self.zgodovina.pop()
+
+    def povleci_potezo(self, figura, polje):
+        if not self.veljavna_poteza(figura, polje):
+            return None
+        else:
+            self.shrani_pozicijo()
+            self.spremeni_stanje()
 
 
     def spremeni_stanje(self, figura, polje):
@@ -60,6 +82,7 @@ class Igra():
 
 
     def veljavna_poteza(self, figura, polje):
+        print(self.veljavne_poteze())
         if polje in self.lisice or polje in self.zajci:
             return False
         if figura[0] == Igra.zajec:
@@ -74,6 +97,7 @@ class Igra():
         if figura[0] == Igra.cakajoca_lisica and self.tip_polja(polje) == Igra.vstopno_lisica:
             return True
 
+
     def ali_je_obkoljen(self, figura, polje):
         obkoljeni = []
         for povezava in Igra.povezave:
@@ -85,11 +109,9 @@ class Igra():
                     sosed = x
                 #PREVERJAMO ČE JE LISICA OBKOLILA ZAJCA
                 if (figura[0] == Igra.lisica or figura[0] == Igra.cakajoca_lisica) and sosed in self.zajci:
-                    print('gledam')
                     je_kandidat = True
                     sosedi_nasprotnika = []
                     for naveza in Igra.povezave:
-                        print(naveza)
                         (a,b) = naveza
                         if sosed in naveza:
                             if sosed == a:
@@ -100,24 +122,19 @@ class Igra():
                     for element in sosedi_nasprotnika:
                         if element not in self.lisice:
                             je_kandidat = False
-                        else:
-                            print(element)
                     if je_kandidat:
                         obkoljeni.append(sosed)
                 #PREVERJAMO ČE JE ZAJEC OBKOLIL LISICO
                 if (figura[0] == Igra.zajec or figura[0] == Igra.cakajoci_zajec) and sosed in self.lisice:
-                    print('gledam')
                     je_kandidat = True
                     sosedi_nasprotnika = []
                     for naveza in Igra.povezave:
                         (a,b) = naveza
-                        print(naveza)
                         if sosed in naveza:
                             if sosed == a:
                                 sosedi_nasprotnika.append(b)
                             else:
                                 sosedi_nasprotnika.append(a)
-                            print(sosedi_nasprotnika)
                     for element in sosedi_nasprotnika:
                         if element not in self.zajci:
                             je_kandidat = False
@@ -128,16 +145,36 @@ class Igra():
     def ali_je_zmaga(self, figura, polje):
         if figura[0] == Igra.lisica and self.tip_polja(polje) == Igra.zmagovalno_lisica:
             return Igra.lisice
-        print(figura[0], self.tip_polja(polje))
         if figura[0] == Igra.zajec and self.tip_polja(polje) == Igra.zmagovalno_zajec:
             return Igra.zajci
+
+    def veljavne_poteze(self):
+        mozne_poteze = {}
+        mozne_poteze_lisic= []
+        mozne_poteze_zajcev = []
+        for i in self.lisice:
+            print(self.lisica, i)
+            mozne_poteze_lisic.append(((Igra.lisica, i), self.mozna_polja((Igra.lisica, i))))
+        if len(self.lisice) < 5:
+            mozne_poteze_lisic.append(((Igra.cakajoca_lisica, None), self.mozna_polja((Igra.cakajoca_lisica, None))))
+
+        for i in self.zajci:
+            print(self.zajec, i)
+            mozne_poteze_zajcev.append(((Igra.zajec, i), self.mozna_polja((Igra.zajec, i))))
+
+        if len(self.zajci) < 5:
+            mozne_poteze_zajcev.append(((Igra.cakajoci_zajec, None), self.mozna_polja((Igra.cakajoci_zajec, None))))
+
+        mozne_poteze['mozne_lisice']=mozne_poteze_lisic
+        mozne_poteze['mozni_zajci'] = mozne_poteze_zajcev
+        return mozne_poteze
 
 
 
     def mozna_polja(self, figura):
         if figura != None:
             za_pobarvat = []
-            if figura[0] == self.lisica or figura[0] == self.zajec:
+            if figura[0] == Igra.lisica or figura[0] == Igra.zajec:
                 for povezava in Igra.povezave:
                     if figura[1] in povezava:
                         (x,y) = povezava
@@ -147,10 +184,12 @@ class Igra():
                         else:
                             if (y not in self.zajci) or (y not in self.lisice):
                                 za_pobarvat.append(x)
-            if figura[0] == self.cakajoca_lisica:
+            if figura[0] == self.cakajoca_lisica and 10 not in (self.lisice or self.zajci):
                 za_pobarvat.append(10)
+            if figura[0] == self.cakajoca_lisica and 16 not in (self.lisice or self.zajci):
                 za_pobarvat.append(16)
-            if figura[0] == self.cakajoci_zajec:
+            if figura[0] == self.cakajoci_zajec and 0 not in (self.lisice or self.zajci):
                 za_pobarvat.append(0)
+            if figura[0] == self.cakajoci_zajec and 6 not in (self.lisice or self.zajci):
                 za_pobarvat.append(6)
             return za_pobarvat
