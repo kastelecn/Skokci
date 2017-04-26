@@ -1,5 +1,7 @@
 from tkinter import *
 from Igra import *
+from clovek import *
+#from racunalnik import *
 
 def sredisce(lst):
     """Središče krogca na Canvasu z danim bounding box."""
@@ -60,6 +62,24 @@ class Gui():
         self.zacetna_lisice = [(Gui.rob + Gui.velikost_stranice_plosce - i/7 * Gui.velikost_stranice_plosce, 1/2*Gui.rob) for i in range(5)]
         self.zacetna_zajci = [(Gui.rob + Gui.velikost_stranice_plosce - i/7 * Gui.velikost_stranice_plosce, 3/2*Gui.rob + Gui.velikost_stranice_plosce) for i in range(5)]
 
+
+        #POUDARIVA VSTOPNA VPOLJA
+        p = self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob - 3/2*Gui.r,
+                                Gui.rob + 3/2*Gui.r, Gui.rob + 3/2*Gui.r , fill='DeepPink3')
+        self.plosca.tag_lower(p)
+        p = self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3/2 * Gui.r, Gui.rob - 3/2 * Gui.r,
+                                Gui.rob + Gui.velikost_stranice_plosce + 3/2 * Gui.r, Gui.rob + 3/2 * Gui.r,
+                                fill='DeepPink3')
+        self.plosca.tag_lower(p)
+        p = self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3/2*Gui.r,
+                                Gui.rob + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
+                                fill='DeepPink3')
+        self.plosca.tag_lower(p)
+        p = self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r,
+                                Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
+                                fill='DeepPink3')
+        self.plosca.tag_lower(p)
+
         #NARIŠEMO SPODNJO ZUNANJO VRSTO
         for i in range(7):
             #bounding_box
@@ -106,7 +126,7 @@ class Gui():
                             Gui.rob + 2/3 * Gui.velikost_stranice_plosce - Gui.r,
                             Gui.rob + 1 / 3 * Gui.velikost_stranice_plosce + i / 6 * Gui.velikost_stranice_plosce + Gui.r,
                             Gui.rob + 2 / 3 * Gui.velikost_stranice_plosce + Gui.r)
-            krogec = self.plosca.create_oval(bounding_box)
+            krogec = self.plosca.create_oval(bounding_box, fill='white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
         # #NARIŠEMO DESNO NOTRANJO VRSTO OD SPODAJ NAVZGOR
@@ -116,7 +136,7 @@ class Gui():
                              Gui.rob + 2 / 3 * Gui.velikost_stranice_plosce + Gui.r,
                              Gui.rob + 1 / 3 * Gui.velikost_stranice_plosce + (1 - i) / 6 * Gui.velikost_stranice_plosce + Gui.r)
 
-             krogec = self.plosca.create_oval(bounding_box)
+             krogec = self.plosca.create_oval(bounding_box,fill='white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠEMO ZGORNJO NOTRANJO VRSTO OD DESNE PROTI LEVI
@@ -126,7 +146,7 @@ class Gui():
                              Gui.rob + 1 / 3 * Gui.velikost_stranice_plosce + (1-i) / 6 * Gui.velikost_stranice_plosce + Gui.r,
                              Gui.rob + 1 / 3 * Gui.velikost_stranice_plosce + Gui.r)
 
-             krogec = self.plosca.create_oval(bounding_box)
+             krogec = self.plosca.create_oval(bounding_box,fill='white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠEMO ŠE ZADNJEGA (27)
@@ -135,12 +155,13 @@ class Gui():
                          Gui.rob + 1 / 3 * Gui.velikost_stranice_plosce + Gui.r,
                          Gui.rob + 1 / 2 * Gui.velikost_stranice_plosce + Gui.r)
 
-        krogec = self.plosca.create_oval(bounding_box)
+        krogec = self.plosca.create_oval(bounding_box,fill='white')
         self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠIVA POVEZAVE
         for (i,j) in self.igra.povezave:
-            self.plosca.create_line(self.polja[i][0], self.polja[j][0])
+            p = self.plosca.create_line(self.polja[i][0], self.polja[j][0])
+            self.plosca.tag_lower(p)
 
         #NARIŠIVA ZAJCE IN LISICE
         for i in range(5):
@@ -157,18 +178,7 @@ class Gui():
                                              1 / 2 * Gui.rob + Gui.r,
                                              fill = 'orange')
             self.lisice_gid.append(lisica)
-        #POUDARIVA VSTOPNA VPOLJA
-        self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob - 3/2*Gui.r,
-                                Gui.rob + 3/2*Gui.r, Gui.rob + 3/2*Gui.r , fill='DeepPink3')
-        self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3/2 * Gui.r, Gui.rob - 3/2 * Gui.r,
-                                Gui.rob + Gui.velikost_stranice_plosce + 3/2 * Gui.r, Gui.rob + 3/2 * Gui.r,
-                                fill='DeepPink3')
-        self.plosca.create_oval(Gui.rob - 3/2*Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3/2*Gui.r,
-                                Gui.rob + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
-                                fill='DeepPink3')
-        self.plosca.create_oval(Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce - 3 / 2 * Gui.r,
-                                Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r, Gui.rob + Gui.velikost_stranice_plosce + 3 / 2 * Gui.r,
-                                fill='DeepPink3')
+
         self.premakni_figure()
 
     def premakni_figure(self):
@@ -213,8 +223,8 @@ class Gui():
                 self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
         if self.oznacen == True and kliknjeno_polje != None:
             if self.igra.veljavna_poteza(self.oznacena_figura, kliknjeno_polje):
-                self.igra.spremeni_stanje(self.oznacena_figura, kliknjeno_polje)
                 self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'white')
+                self.igra.spremeni_stanje(self.oznacena_figura, kliknjeno_polje)
                 self.premakni_figure()
                 if self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje) != None:
                     self.naredi_napis_na_koncu(self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje))
@@ -245,7 +255,12 @@ class Gui():
             self.oznacen = True
             return (self.igra.lisica, kliknjeno_polje)
 
-
+    def povleci_potezo(self):
+        r = self.igra.povleci_potezo(figura, polje)
+        if r is None:
+            pass
+        else:
+            self.premakni_figure()
 
 
     def pobarvaj(self, za_pobarvat, barva):
