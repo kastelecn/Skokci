@@ -1,6 +1,7 @@
 from tkinter import *
 from Igra import *
 from clovek import *
+import logging
 #from racunalnik import *
 
 def sredisce(lst):
@@ -14,7 +15,8 @@ class Gui():
     r = 10
 
     def __init__(self, master):
-
+        self.igralec_lisice = None
+        self.igralec_zajci = None
         master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
 
         self.plosca = Canvas(master, width=Gui.velikost_stranice_plosce + 2 * Gui.rob,
@@ -56,6 +58,7 @@ class Gui():
         self.lisice_gid= []
         self.zajci_gid = []
         self.oznacen = False
+        self.napis_na_koncu = None
 
 
         #ZAČETNE KOORDINATE FIGUR
@@ -190,7 +193,8 @@ class Gui():
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
         i = 0
-        while k < len(self.lisice_gid):
+        while k < self.igra.stevilo_lisic_v_igri:
+            print(k)
             (x, y) = self.zacetna_lisice[i]
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
@@ -203,7 +207,7 @@ class Gui():
             self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
         i = 0
-        while k < len(self.zajci_gid):
+        while k < self.igra.stevilo_zajcev_v_igri:
             (x, y) = self.zacetna_zajci[i]
             self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
@@ -235,23 +239,23 @@ class Gui():
     def isci_figuro(self, x, y, kliknjeno_polje):
         if kliknjeno_polje == None:
             if self.igra.na_potezi == Igra.zajci:
-                for k in range(5 - len(self.igra.zajci)):
+                for k in range(self.igra.stevilo_zajcev_v_igri - len(self.igra.zajci)):
                     f1, f2 = self.zacetna_zajci[k]
                     if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
                         self.oznacen = True
 
                         return (self.igra.cakajoci_zajec, None)
             if self.igra.na_potezi == Igra.lisice:
-                for k in range(5-len(self.igra.lisice)):
+                for k in range(self.igra.stevilo_lisic_v_igri-len(self.igra.lisice)):
                     f1, f2 = self.zacetna_lisice[k]
                     if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
                         self.oznacen = True
                         return (self.igra.cakajoca_lisica, None)
             return None
-        if kliknjeno_polje in self.igra.zajci:
+        if kliknjeno_polje in self.igra.zajci and self.igra.na_potezi == Igra.zajci:
             self.oznacen = True
             return (self.igra.zajec, kliknjeno_polje)
-        if kliknjeno_polje in self.igra.lisice:
+        if kliknjeno_polje in self.igra.lisice and self.igra.na_potezi == Igra.lisice:
             self.oznacen = True
             return (self.igra.lisica, kliknjeno_polje)
 
@@ -267,15 +271,27 @@ class Gui():
         for i in za_pobarvat:
             self.plosca.itemconfig(self.polja[i][1], fill=barva)
 
-    def zacni_novo_igro(self):
+    def zacni_novo_igro(self, igralec_lisice, igralec_zajci):
+        self.prekini_igralce()
+        self.igralec_lisice = igralec_lisice
+        self.igralec_zajci = igralec_zajci
         self.igra.igra_poteka = True
         self.igra.na_potezi = Igra.lisice
         self.igra.lisice = []
         self.igra.zajci = []
+        self.igra.stevilo_lisic_v_igri = 5
+        self.igra.stevilo_zajcev_v_igri = 5
         self.premakni_figure()
+        self.plosca.delete(self.napis_na_koncu)
+
+    def prekini_igralce(self):
+        """SporoÄi igralcem, da morajo nehati razmiĹĄljati."""
+        logging.debug ("prekinjam igralce")
+        if self.igralec_lisice: self.igralec_lisice.prekini()
+        if self.igralec_zajci: self.igralec_zajci.prekini()
 
     def naredi_napis_na_koncu(self, zmagovalec):
-        self.plosca.create_text(Gui.rob + 1/2 * Gui.velikost_stranice_plosce, Gui.rob + 1/2 * Gui.velikost_stranice_plosce, font=('Purisa', 20), text='ZMAGOVALCI SO {}'.format(zmagovalec),
+        self.napis_na_koncu = self.plosca.create_text(Gui.rob + 1/2 * Gui.velikost_stranice_plosce, Gui.rob + 1/2 * Gui.velikost_stranice_plosce, font=('Purisa', 20), text='ZMAGOVALCI SO {}'.format(zmagovalec),
                                 fill='red')
 
 
