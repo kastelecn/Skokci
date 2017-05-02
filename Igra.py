@@ -1,3 +1,10 @@
+def nasprotnik(igralec):
+     """Vrni nasprotnika od igralca."""
+     if igralec == Igra.lisice:
+         return Igra.zajci
+     elif igralec == Igra.zajci:
+         return Igra.lisice
+
 
 class Igra():
 
@@ -23,8 +30,11 @@ class Igra():
         self.na_potezi = Igra.lisice #zajci ali lisice
         self.lisice = [] #polja, kjer se nahajajo lisice
         self.zajci = [] #polja, kjer se nahajajo zajci
+        self.stevilo_lisic_v_igri = 5 #koliko lisic je se vi igri
+        self.stevilo_zajcev_v_igri = 5 #koliko zajcev je se v igri
         self.igra_poteka = True
         self.zgodovina = []
+
 
 
     def tip_polja(self, k):
@@ -75,10 +85,14 @@ class Igra():
             for i in self.ali_je_obkoljen(figura, polje):
                 if i in self.zajci:
                     self.zajci.remove(i)
+                    self.stevilo_zajcev_v_igri -= 1
                 if i in self.lisice:
                     self.lisice.remove(i)
+                    self.stevilo_lisic_v_igri -= 1
+
             if self.ali_je_zmaga(figura, polje) != None:
                 self.igra_poteka = False
+        print(self.stevilo_lisic_v_igri)
 
 
     def veljavna_poteza(self, figura, polje):
@@ -147,6 +161,10 @@ class Igra():
             return Igra.lisice
         if figura[0] == Igra.zajec and self.tip_polja(polje) == Igra.zmagovalno_zajec:
             return Igra.zajci
+        if self.stevilo_lisic_v_igri == 0:
+            return Igra.zajci
+        if self.stevilo_zajcev_v_igri == 0:
+            return Igra.lisice
 
     def veljavne_poteze(self):
         mozne_poteze = {}
@@ -155,17 +173,17 @@ class Igra():
         for i in self.lisice:
             print(self.lisica, i)
             mozne_poteze_lisic.append(((Igra.lisica, i), self.mozna_polja((Igra.lisica, i))))
-        if len(self.lisice) < 5:
+        if len(self.lisice) < self.stevilo_lisic_v_igri:
             mozne_poteze_lisic.append(((Igra.cakajoca_lisica, None), self.mozna_polja((Igra.cakajoca_lisica, None))))
 
         for i in self.zajci:
             print(self.zajec, i)
             mozne_poteze_zajcev.append(((Igra.zajec, i), self.mozna_polja((Igra.zajec, i))))
 
-        if len(self.zajci) < 5:
+        if len(self.zajci) < self.stevilo_zajcev_v_igri:
             mozne_poteze_zajcev.append(((Igra.cakajoci_zajec, None), self.mozna_polja((Igra.cakajoci_zajec, None))))
 
-        mozne_poteze['mozne_lisice']=mozne_poteze_lisic
+        mozne_poteze['mozne_lisice']= mozne_poteze_lisic
         mozne_poteze['mozni_zajci'] = mozne_poteze_zajcev
         return mozne_poteze
 
