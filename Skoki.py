@@ -2,7 +2,10 @@ from tkinter import *
 from Igra import *
 from clovek import *
 import logging
-#from racunalnik import *
+from racunalnik import *
+
+# Privzeta minimax globina, Äe je nismo podali ob zagonu v ukazni vrstici
+MINIMAX_GLOBINA = 3
 
 def sredisce(lst):
     """Središče krogca na Canvasu z danim bounding box."""
@@ -39,13 +42,13 @@ class Gui():
 
         menu_igra.add_command(label="Lisice=Človek, Zajci=Računalnik",
                             command=lambda: self.zacni_novo_igro(Clovek(self),
-                                                          Racunalnik(self)))
+                                                          Racunalnik(self, Minimax(3))))
         menu_igra.add_command(label="Lisice=Računalnik, Zajci=Človek",
-                            command=lambda: self.zacni_novo_igro(Racunalnik(self),
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(3)),
                                                           Clovek(self)))
         menu_igra.add_command(label="Lisice=Računalnik, Zajci=Računalnik",
-                            command=lambda: self.zacni_novo_igro(Racunalnik(self),
-                                                          Racunalnik(self)))
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(3)),
+                                                          Racunalnik(self, Minimax(3))))
 
 
 
@@ -194,7 +197,7 @@ class Gui():
             k += 1
         i = 0
         while k < self.igra.stevilo_lisic_v_igri:
-            print(k)
+
             (x, y) = self.zacetna_lisice[i]
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
@@ -259,7 +262,8 @@ class Gui():
             self.oznacen = True
             return (self.igra.lisica, kliknjeno_polje)
 
-    def povleci_potezo(self):
+    def povleci_potezo(self, poteza):
+        figura, polje = poteza
         r = self.igra.povleci_potezo(figura, polje)
         if r is None:
             pass
@@ -283,6 +287,7 @@ class Gui():
         self.igra.stevilo_zajcev_v_igri = 5
         self.premakni_figure()
         self.plosca.delete(self.napis_na_koncu)
+        self.igralec_lisice.igraj()
 
     def prekini_igralce(self):
         """SporoÄi igralcem, da morajo nehati razmiĹĄljati."""
