@@ -57,38 +57,62 @@ class Minimax:
         if self.jaz == Igra.lisice:
             for i in self.igra.lisice:
                 dolzine = []
+                slabe_dolzine = []
                 for pot in Minimax.POTI_ZA_LISICE:
                     if i in pot:
                         indeks = pot.index(i)
                         if pot[indeks+1] not in self.igra.zajci:
                             dolzine.append(len(pot[indeks:]))
-                # XXX popravi
+                        else:
+                            slabe_dolzine.append(len(pot[indeks:]))
+
                 if len(dolzine) > 0:
                     vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
+                elif len(slabe_dolzine) > 0:
+                    vrednost += Minimax.ZMAGA // 100 - min(slabe_dolzine) * 90
+
+                (figura, polje) = ((Igra.lisica, i), i)
+                if self.igra.ali_je_obkoljen(figura, polje):
+                    vrednost += 4000
 
 
             for i in self.igra.zajci:
                 dolzine = []
+                slabe_dolzine = []
                 for pot in Minimax.POTI_ZA_ZAJCE:
                     if i in pot:
                         indeks = pot.index(i)
                         if pot[indeks+1] not in self.igra.lisice:
                             dolzine.append(len(pot[indeks:]))
-                # XXX popravi
+                        else:
+                            slabe_dolzine.append(len(pot[indeks:]))
                 if len(dolzine) > 0:
                     vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
+                elif len(slabe_dolzine) > 0:
+                    vrednost -= Minimax.ZMAGA // 100 - min(slabe_dolzine) *90
+
+                (figura, polje) = ((Igra.zajec, i), i)
+                if self.igra.ali_je_obkoljen(figura, polje):
+                    vrednost -= 4000
 
         if self.jaz == Igra.zajci:
             for i in self.igra.zajci:
                 dolzine = []
+                slabe_dolzine = []
                 for pot in Minimax.POTI_ZA_ZAJCE:
                     if i in pot:
                         indeks = pot.index(i)
                         if pot[indeks + 1] not in self.igra.lisice:
                             dolzine.append(len(pot[indeks:]))
-                # XXX popravi
+                        else:
+                            slabe_dolzine.append(len(pot[indeks:]))
                 if len(dolzine) > 0:
                     vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
+                elif len(slabe_dolzine) > 0:
+                    vrednost += Minimax.ZMAGA // 100 - min(slabe_dolzine) * 90
+                (figura, polje) = ((Igra.zajec, i), i)
+                if self.igra.ali_je_obkoljen(figura, polje):
+                    vrednost += 4000
 
             for i in self.igra.lisice:
                 dolzine = []
@@ -97,9 +121,16 @@ class Minimax:
                         indeks = pot.index(i)
                         if pot[indeks + 1] not in self.igra.zajci:
                             dolzine.append(len(pot[indeks:]))
-                # XXX popravi
+                        else:
+                            slabe_dolzine.append(len(pot[indeks:]))
                 if len(dolzine) > 0:
                     vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
+                elif len(slabe_dolzine) > 0:
+                    vrednost -= Minimax.ZMAGA // 100 - min(slabe_dolzine) * 90
+                (figura, polje) = ((Igra.lisica, i), i)
+                if self.igra.ali_je_obkoljen(figura, polje):
+                    vrednost += 4000
+
 
         return(vrednost)
 
