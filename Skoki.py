@@ -5,7 +5,7 @@ import logging
 from racunalnik import *
 
 # Privzeta minimax globina, Äe je nismo podali ob zagonu v ukazni vrstici
-MINIMAX_GLOBINA = 3
+GLOBINA = 1
 
 def sredisce(lst):
     """Središče krogca na Canvasu z danim bounding box."""
@@ -42,13 +42,13 @@ class Gui():
 
         menu_igra.add_command(label="Lisice=Človek, Zajci=Računalnik",
                             command=lambda: self.zacni_novo_igro(Clovek(self),
-                                                          Racunalnik(self, Minimax(3))))
+                                                          Racunalnik(self, Minimax(GLOBINA))))
         menu_igra.add_command(label="Lisice=Računalnik, Zajci=Človek",
-                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(3)),
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA)),
                                                           Clovek(self)))
         menu_igra.add_command(label="Lisice=Računalnik, Zajci=Računalnik",
-                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(3)),
-                                                          Racunalnik(self, Minimax(3))))
+                            command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA)),
+                                                          Racunalnik(self, Minimax(GLOBINA))))
 
 
 
@@ -57,7 +57,7 @@ class Gui():
 
         self.oznacena_figura = None
         self.polja = []
-        self.igra = Igra()
+        self.igra = None
         self.lisice_gid= []
         self.zajci_gid = []
         self.oznacen = False
@@ -165,7 +165,7 @@ class Gui():
         self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠIVA POVEZAVE
-        for (i,j) in self.igra.povezave:
+        for (i,j) in Igra.povezave:
             p = self.plosca.create_line(self.polja[i][0], self.polja[j][0])
             self.plosca.tag_lower(p)
 
@@ -185,7 +185,9 @@ class Gui():
                                              fill = 'orange')
             self.lisice_gid.append(lisica)
 
-        self.premakni_figure() #Začetno stanje na plošči
+        # Čez 1 sekundo začnemo igro človeka proti računalniku
+        self.plosca.after(1000,
+                          lambda: self.zacni_novo_igro(Clovek(self), Racunalnik(self, Minimax(GLOBINA))))
 
     def premakni_figure(self):
         #osveži stanje na plošči
@@ -218,7 +220,8 @@ class Gui():
             k += 1
 
     def kliknjeno_polje(self, event):
-        #pokliče označeno figuro
+        if self.igra is None: return # sploh ne igramo
+        # Izračunamo potezo
         x, y = event.x, event.y
         kliknjeno_polje = None
         for i in range(len(self.polja)):
@@ -226,53 +229,80 @@ class Gui():
             if (x-f1)**2 + (y-f2)**2 < Gui.r**2:
                 kliknjeno_polje = i
                 continue
-        if self.oznacen == False:
-            self.oznacena_figura = self.isci_figuro(x,y,kliknjeno_polje)
-            if self.igra.igra_poteka and self.oznacena_figura != None:
-                self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
-        if self.oznacen == True and kliknjeno_polje != None:
-            if self.igra.veljavna_poteza(self.oznacena_figura, kliknjeno_polje):
+        if kliknjeno_polje is None:
+            # nismo kliknili na polje
+            if self.oznacen:
+                # imamo oznaceno figuro, ne naredimo nic
+                pass
+            else:
+                # pogledamo, ali smo kliknili na cakajoco figuro
+                if self.igra.na_potezi == Igra.zajci:
+                    # ali smo kliknili na zajca?
+                    for k in range(self.igra.stevilo_zajcev_v_igri - len(self.igra.zajci)):
+                        f1, f2 = self.zacetna_zajci[k]
+                        if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
+                            # oznacimo zajca, ki je kliknjen
+                            self.oznacen = True
+                            self.oznacena_figura = (self.igra.cakajoci_zajec, None)
+                            # pobarvamo moznosti z modro
+                            self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
+                elif self.igra.na_potezi == Igra.lisice:
+                    # ali smo kliknili na lisico?
+                    for k in range(self.igra.stevilo_lisic_v_igri-len(self.igra.lisice)):
+                        f1, f2 = self.zacetna_lisice[k]
+                        if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
+                            # oznacimo lisico, ki je kliknjena
+                            self.oznacen = True
+                            self.oznacena_figura = (self.igra.cakajoca_lisica, None)
+        else:
+            # kliknili smo na polje
+            if self.oznacen:
+                # imamo oznaceno figuro in polje, kamor mora iti
+                assert (self.oznacena_figura is not None)
+                poteza = (self.oznacena_figura, kliknjeno_polje)
+                # moznosti za oznaceno figuro odstranimo
                 self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'white')
-                self.igra.spremeni_stanje(self.oznacena_figura, kliknjeno_polje)
-                self.premakni_figure()
-                if self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje) != None:
-                    self.naredi_napis_na_koncu(self.igra.ali_je_zmaga(self.oznacena_figura, kliknjeno_polje))
-
                 self.oznacen = False
-
-
-    def isci_figuro(self, x, y, kliknjeno_polje):
-        #Išče figuro in polje, kamor se prestavi figura
-        if kliknjeno_polje == None:
-            if self.igra.na_potezi == Igra.zajci:
-                for k in range(self.igra.stevilo_zajcev_v_igri - len(self.igra.zajci)):
-                    f1, f2 = self.zacetna_zajci[k]
-                    if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
-                        self.oznacen = True
-
-                        return (self.igra.cakajoci_zajec, None)
-            if self.igra.na_potezi == Igra.lisice:
-                for k in range(self.igra.stevilo_lisic_v_igri-len(self.igra.lisice)):
-                    f1, f2 = self.zacetna_lisice[k]
-                    if (x - f1) ** 2 + (y - f2) ** 2 < Gui.r ** 2:
-                        self.oznacen = True
-                        return (self.igra.cakajoca_lisica, None)
-            return None
-        if kliknjeno_polje in self.igra.zajci and self.igra.na_potezi == Igra.zajci:
-            self.oznacen = True
-            return (self.igra.zajec, kliknjeno_polje)
-        if kliknjeno_polje in self.igra.lisice and self.igra.na_potezi == Igra.lisice:
-            self.oznacen = True
-            return (self.igra.lisica, kliknjeno_polje)
+                self.oznacena_figura = None
+                if self.igra.na_potezi == Igra.zajci:
+                    self.igralec_zajci.klik(poteza)
+                elif self.igra.na_potezi == Igra.lisice:
+                    self.igralec_lisice.klik(poteza)
+            else:
+                # ali je treba oznaciti figuro?
+                if (kliknjeno_polje in self.igra.zajci) and self.igra.na_potezi == Igra.zajci:
+                    self.oznacen = True
+                    self.oznacena_figura = (self.igra.zajec, kliknjeno_polje)
+                    self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
+                elif (kliknjeno_polje in self.igra.lisice) and self.igra.na_potezi == Igra.lisice:
+                    self.oznacen = True
+                    self.oznacena_figura = (self.igra.lisica, kliknjeno_polje)
+                    self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
+                else:
+                    # kliknjeno polje je prazno, ali pa je kliknil na figuro, ki ni na potezi
+                    pass
 
     def povleci_potezo(self, poteza):
-        
+        print ("GUI vleče potezo {0} v poziciji {1}".format(poteza, (self.igra.zajci, self.igra.lisice)))
         figura, polje = poteza
         r = self.igra.povleci_potezo(figura, polje)
+        print ("GUI status poteze je {0}, pozicija je zdaj {1}".format(r, (self.igra.zajci, self.igra.lisice)))
         if r is None:
+            # poteza ni veljavna
             pass
         else:
+            # poteza je veljavna
             self.premakni_figure()
+            # naslednji odigra potezo
+            if self.igra.na_potezi == Igra.zajci:
+                self.igralec_zajci.igraj()
+            elif self.igra.na_potezi == Igra.lisice:
+                self.igralec_lisice.igraj()
+            elif self.igra.na_potezi == None:
+                # igre je konec
+                assert False, "KONEC IGRE NI NAREJEN"
+            else:
+                assert False, "nedefinirano stanje igre"
 
 
     def pobarvaj(self, za_pobarvat, barva):
@@ -284,14 +314,9 @@ class Gui():
         self.prekini_igralce()
         self.igralec_lisice = igralec_lisice
         self.igralec_zajci = igralec_zajci
-        self.igra.igra_poteka = True
-        self.igra.na_potezi = Igra.lisice
-        self.igra.lisice = []
-        self.igra.zajci = []
-        self.igra.stevilo_lisic_v_igri = 5
-        self.igra.stevilo_zajcev_v_igri = 5
-        self.premakni_figure()
+        self.igra = Igra()
         self.plosca.delete(self.napis_na_koncu)
+        self.premakni_figure()
         self.igralec_lisice.igraj()
 
     def prekini_igralce(self):

@@ -62,7 +62,9 @@ class Minimax:
                         indeks = pot.index(i)
                         if pot[indeks+1] not in self.igra.zajci:
                             dolzine.append(len(pot[indeks:]))
-                vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
+                # XXX popravi
+                if len(dolzine) > 0:
+                    vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
 
 
             for i in self.igra.zajci:
@@ -72,7 +74,9 @@ class Minimax:
                         indeks = pot.index(i)
                         if pot[indeks+1] not in self.igra.lisice:
                             dolzine.append(len(pot[indeks:]))
-                vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
+                # XXX popravi
+                if len(dolzine) > 0:
+                    vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
 
         if self.jaz == Igra.zajci:
             for i in self.igra.zajci:
@@ -82,7 +86,9 @@ class Minimax:
                         indeks = pot.index(i)
                         if pot[indeks + 1] not in self.igra.lisice:
                             dolzine.append(len(pot[indeks:]))
-                vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
+                # XXX popravi
+                if len(dolzine) > 0:
+                    vrednost += Minimax.ZMAGA // 100 - min(dolzine) * 50
 
             for i in self.igra.lisice:
                 dolzine = []
@@ -91,7 +97,9 @@ class Minimax:
                         indeks = pot.index(i)
                         if pot[indeks + 1] not in self.igra.zajci:
                             dolzine.append(len(pot[indeks:]))
-                vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
+                # XXX popravi
+                if len(dolzine) > 0:
+                    vrednost -= Minimax.ZMAGA // 100 - min(dolzine) * 50
 
         return(vrednost)
 
@@ -103,12 +111,6 @@ class Minimax:
         if self.prekinitev:
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
             return (None, None, 0)
-        if not self.igra.igra_poteka:
-            if self.igra.na_potezi == self.jaz:
-                return (None,None,  Minimax.ZMAGA)
-            elif self.igra.na_potezi == nasprotnik(self.jaz):
-                return (None, None, -Minimax.ZMAGA)
-
         zmagovalec = self.igra.stanje_igre()
         if zmagovalec in (Igra.lisice, Igra.zajci):
             # Igre je konec, vrnemo njeno vrednost
@@ -116,7 +118,6 @@ class Minimax:
                 return (None, None, Minimax.ZMAGA)
             elif zmagovalec == nasprotnik(self.jaz):
                 return (None, None, -Minimax.ZMAGA)
-
         elif zmagovalec == None:
             # Igre ni konec
             print(self.vrednost_pozicije())
@@ -129,41 +130,31 @@ class Minimax:
                     najboljsa_poteza = (None, None)
                     print('sem globoko')
                     vrednost_najboljse = -Minimax.NESKONCNO
-                    for (figura, polja) in self.igra.veljavne_poteze()[self.jaz]:
-                        print(figura, polja)
-                        vmesne_vrednosti = {}
+                    for (figura, polja) in self.igra.veljavne_poteze()[self.igra.na_potezi]:
                         #za vsako figuro mora preveriti vrednost vseh možnih polj
                         for polje in polja:
-                            self.igra.povleci_potezo(figura, polje)
-                            vmesne_vrednosti[polje] = self.vrednost_pozicije()
+                            print ("minimax: poteza {0}, {1} v poziciji:\n{2}".format(figura, polje, (self.igra.zajci, self.igra.lisice)))
+                            r = self.igra.povleci_potezo(figura, polje)
+                            assert (r is not None), "minimax je hotel poveči nevejavno potezo {0}".format((figura, polje))
+                            vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
                             self.igra.razveljavi()
-                        max_polje = max(vmesne_vrednosti, key=vmesne_vrednosti.get)
-                        self.igra.povleci_potezo(figura, max_polje)
-                        vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
-                        self.igra.razveljavi()
-                        if vrednost > vrednost_najboljse:
-                            vrednost_najboljse = vrednost
-                            najboljsa_poteza = figura, polje
+                            if vrednost > vrednost_najboljse:
+                                vrednost_najboljse = vrednost
+                                najboljsa_poteza = (figura, polje)
                 else:
                     # Minimiziramo
                     najboljsa_poteza = (None, None)
                     vrednost_najboljse = Minimax.NESKONCNO
-                    for figura,polja in self.igra.veljavne_poteze()[nasprotnik(self.jaz)]:
-                        vmesne_vrednosti = {}
+                    for (figura, polja) in self.igra.veljavne_poteze()[self.igra.na_potezi]:
                         for polje in polja:
                             self.igra.povleci_potezo(figura, polje)
-                            vmesne_vrednosti[polje] = self.vrednost_pozicije()
+                            vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
                             self.igra.razveljavi()
-                        max_polje = max(vmesne_vrednosti, key=vmesne_vrednosti.get)
-                        self.igra.povleci_potezo(figura, max_polje)
-                        vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
-                        self.igra.razveljavi()
-                        if vrednost < vrednost_najboljse:
-                            vrednost_najboljse = vrednost
-                            najboljsa_poteza = figura, polje
+                            if vrednost < vrednost_najboljse:
+                                vrednost_najboljse = vrednost
+                                najboljsa_poteza = (figura, polje)
 
-
-                assert (najboljsa_poteza is not None), "minimax: izračunana poteza je None, None"
-                return (figura, polje, vrednost_najboljse)
+                assert (najboljsa_poteza != (None, None)), "minimax: izračunana poteza je None, None"
+                return (najboljsa_poteza[0], najboljsa_poteza[1], vrednost_najboljse)
         else:
             assert False, "minimax: nedefinirano stanje igre"

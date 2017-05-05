@@ -24,6 +24,7 @@ class Racunalnik():
         # naredili bolje (vlakno bi samo sporočilo GUI-ju, da je treba narediti potezo).
 
         # Naredimo vlakno, ki mu podamo *kopijo* igre (da ne bo zmedel GUIja):
+        print ("Racunalnik je na potezi")
         self.mislec = threading.Thread(
             target=lambda: self.algoritem.izracunaj_potezo(self.gui.igra.kopija()))
 
@@ -37,6 +38,7 @@ class Racunalnik():
         """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
         if self.algoritem.poteza is not None:
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
+            print ("Racunalnik vleče potezo {0}".format(self.algoritem.poteza))
             self.gui.povleci_potezo(self.algoritem.poteza)
             # Vzporedno vlakno ni več aktivno, zato ga "pozabimo"
             self.mislec = None
