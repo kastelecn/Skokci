@@ -32,7 +32,6 @@ class Igra():
         self.zajci = [] #polja, kjer se nahajajo zajci
         self.stevilo_lisic_v_igri = 5 #koliko lisic je se vi igri
         self.stevilo_zajcev_v_igri = 5 #koliko zajcev je se v igri
-        self.igra_poteka = True
         self.zgodovina = []
 
 
@@ -49,21 +48,31 @@ class Igra():
             return Igra.zmagovalno_lisica
         return Igra.navadno
 
-    def shrani_pozicijo(self):
-        #v seznam zgodovina shrani novo pozicijo, ki je oblike ((polja z lisicami, polja z zajci), kdo je na potezi)
-        p = (self.lisice, self.zajci)
-        self.zgodovina.append((p, self.na_potezi))
-
     def kopija(self):
         #vrne kopijo trenutne igre, ki je predstavljena s tem kdo je na potezi, polja z lisicami, polja z zajci
         kopija = Igra()
-        kopija.lisice = self.lisice
-        kopija.zajci = self.zajci
+        kopija.lisice = self.lisice[:]
+        kopija.zajci = self.zajci[:]
+        kopija.stevilo_lisic_v_igri = self.stevilo_lisic_v_igri
+        kopija.stevilo_zajcev_v_igri = self.stevilo_zajcev_v_igri
         kopija.na_potezi = self.na_potezi
         return kopija
 
+    def shrani_pozicijo(self):
+        #v seznam zgodovina shrani novo pozicijo, ki je oblike ((polja z lisicami, polja z zajci), kdo je na potezi)
+        self.zgodovina.append(
+             (self.lisice[:],
+              self.zajci[:],
+              self.stevilo_lisic_v_igri,
+              self.stevilo_zajcev_v_igri,
+              self.na_potezi))
+
     def razveljavi(self):
-        ((self.lisice, self.zajci), self.na_potezi) = self.zgodovina.pop()
+         (self.lisice,
+          self.zajci,
+          self.stevilo_lisic_v_igri,
+          self.stevilo_zajcev_v_igri,
+          self.na_potezi) = self.zgodovina.pop()
 
     def povleci_potezo(self, figura, polje):
         if not self.veljavna_poteza(figura, polje):
@@ -75,33 +84,25 @@ class Igra():
 
 
     def spremeni_stanje(self, figura, polje):
-        #updata seznama self.lisice in self.zajci (doda nova polja in odstrani stare)
-        if self.igra_poteka:
-            if figura[0] == Igra.zajec or figura[0] == Igra.cakajoci_zajec:
-                self.zajci.append(polje)
-                if figura[1] != None:
-                    self.zajci.remove(figura[1])
-                self.na_potezi = Igra.lisice
-            if figura[0] == Igra.lisica or figura[0] == Igra.cakajoca_lisica:
-                self.lisice.append(polje)
-                if figura[1] != None:
-                    print(figura, self.lisice, 'drugo je self.lisice')
-                    self.lisice.remove(figura[1])
-                self.na_potezi = Igra.zajci
-            #obkoljenega vrze dol za zmerej, torej spremeni stevilo lisic oz zajcev v igri
-            for i in self.ali_je_obkoljen(figura, polje):
-                if i in self.zajci:
-                    self.zajci.remove(i)
-                    self.stevilo_zajcev_v_igri -= 1
-                if i in self.lisice:
-                    self.lisice.remove(i)
-                    self.stevilo_lisic_v_igri -= 1
-
-            if self.ali_je_zmaga(figura, polje) != None:
-                self.igra_poteka = False
-
-
-
+       #updata seznama self.lisice in self.zajci (doda nova polja in odstrani stare)
+       if figura[0] == Igra.zajec or figura[0] == Igra.cakajoci_zajec:
+           self.zajci.append(polje)
+           if figura[1] != None:
+               self.zajci.remove(figura[1])
+           self.na_potezi = Igra.lisice
+       if figura[0] == Igra.lisica or figura[0] == Igra.cakajoca_lisica:
+           self.lisice.append(polje)
+           if figura[1] != None:
+               self.lisice.remove(figura[1])
+           self.na_potezi = Igra.zajci
+       #obkoljenega vrze dol za zmerej, torej spremeni stevilo lisic oz zajcev v igri
+       for i in self.ali_je_obkoljen(figura, polje):
+           if i in self.zajci:
+               self.zajci.remove(i)
+               self.stevilo_zajcev_v_igri -= 1
+           if i in self.lisice:
+               self.lisice.remove(i)
+               self.stevilo_lisic_v_igri -= 1
 
     def stanje_igre(self):
         #vrne zmagovalca ali pa None, če igre ni konec
@@ -111,7 +112,6 @@ class Igra():
             return Igra.zajci
         else:
             return None
-
 
     def veljavna_poteza(self, figura, polje):
         #če je polje zasedeno, vrne False
@@ -189,6 +189,7 @@ class Igra():
 
     def veljavne_poteze(self):
         #vrne slovar z dvema kljucema, mozne poteze za zajce in mozne poteze lisic. oblika: {mozne lisice: [((kdo, kje je zdaj), [mozna polja])]}
+        print ("veljavne_poteze: pozicija = {0}".format((self.zajci, self.lisice)))
         mozne_poteze = {}
         mozne_poteze_lisic= []
         mozne_poteze_zajcev = []
@@ -204,30 +205,28 @@ class Igra():
 
         mozne_poteze[Igra.lisice]= mozne_poteze_lisic
         mozne_poteze[Igra.zajci] = mozne_poteze_zajcev
+        print ("veljavne_poteze: vračamo {0}".format(mozne_poteze))
         return mozne_poteze
 
 
+    def je_prazno(self, polje):
+        return (polje not in self.zajci) and (polje not in self.lisice)
 
     def mozna_polja(self, figura):
         #pogleda mozna polja, kam lahko gre figura. vrne seznam za pobarvat, ki ga uporabi tudi funkcija v Guiju, ki jih pobarva za uporabnika
-        if figura != None:
-            za_pobarvat = []
-            if figura[0] == Igra.lisica or figura[0] == Igra.zajec:
-                for povezava in Igra.povezave:
-                    if figura[1] in povezava:
-                        (x,y) = povezava
-                        if x == figura[1]:
-                            if (y not in self.zajci) or (y not in self.lisice):
-                                za_pobarvat.append(y)
-                        else:
-                            if (y not in self.zajci) or (y not in self.lisice):
-                                za_pobarvat.append(x)
-            if figura[0] == self.cakajoca_lisica and 10 not in (self.lisice or self.zajci):
-                za_pobarvat.append(10)
-            if figura[0] == self.cakajoca_lisica and 16 not in (self.lisice or self.zajci):
-                za_pobarvat.append(16)
-            if figura[0] == self.cakajoci_zajec and 0 not in (self.lisice or self.zajci):
-                za_pobarvat.append(0)
-            if figura[0] == self.cakajoci_zajec and 6 not in (self.lisice or self.zajci):
-                za_pobarvat.append(6)
-            return za_pobarvat
+       za_pobarvat = []
+       if figura[0] == Igra.lisica or figura[0] == Igra.zajec:
+           for povezava in Igra.povezave:
+               if figura[1] == povezava[0]:
+                    if self.je_prazno(povezava[1]): za_pobarvat.append(povezava[1])
+               elif figura[1] == povezava[1]:
+                    if self.je_prazno(povezava[0]): za_pobarvat.append(povezava[0])
+       elif figura[0] == self.cakajoca_lisica:
+            if self.je_prazno(10): za_pobarvat.append(10)
+            if self.je_prazno(16): za_pobarvat.append(16)
+       elif figura[0] == self.cakajoci_zajec:
+            if self.je_prazno(0): za_pobarvat.append(0)
+            if self.je_prazno(6): za_pobarvat.append(6)
+       else:
+            assert False
+       return tuple(za_pobarvat)
