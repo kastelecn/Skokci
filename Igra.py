@@ -118,16 +118,17 @@ class Igra():
         if polje in self.lisice or polje in self.zajci:
             return False
         #polje ni zasedeno, preveri če je sosedno
+
         if figura[0] == Igra.zajec:
             if ((figura[1], polje) in Igra.povezave) or ((polje, figura[1]) in Igra.povezave):
                 return True
-        if figura[0] == Igra.cakajoci_zajec and self.tip_polja(polje) == Igra.vstopno_zajec:
+        elif figura[0] == Igra.cakajoci_zajec and self.tip_polja(polje) == Igra.vstopno_zajec:
             return True
 
-        if figura[0] == Igra.lisica:
+        elif figura[0] == Igra.lisica:
             if ((figura[1], polje) in Igra.povezave) or ((polje, figura[1]) in Igra.povezave):
                 return True
-        if figura[0] == Igra.cakajoca_lisica and self.tip_polja(polje) == Igra.vstopno_lisica:
+        elif figura[0] == Igra.cakajoca_lisica and self.tip_polja(polje) == Igra.vstopno_lisica:
             return True
 
 
@@ -195,12 +196,12 @@ class Igra():
         mozne_poteze_zajcev = []
         for i in self.lisice:
             mozne_poteze_lisic.append(((Igra.lisica, i), self.mozna_polja((Igra.lisica, i))))
-        if len(self.lisice) < self.stevilo_lisic_v_igri:
+        if len(self.lisice) < self.stevilo_lisic_v_igri and (self.je_prazno(10) or self.je_prazno(16)):
             mozne_poteze_lisic.append(((Igra.cakajoca_lisica, None), self.mozna_polja((Igra.cakajoca_lisica, None))))
 
         for i in self.zajci:
             mozne_poteze_zajcev.append(((Igra.zajec, i), self.mozna_polja((Igra.zajec, i))))
-        if len(self.zajci) < self.stevilo_zajcev_v_igri:
+        if len(self.zajci) < self.stevilo_zajcev_v_igri and (self.je_prazno(0) or self.je_prazno(6)):
             mozne_poteze_zajcev.append(((Igra.cakajoci_zajec, None), self.mozna_polja((Igra.cakajoci_zajec, None))))
 
         mozne_poteze[Igra.lisice]= mozne_poteze_lisic
