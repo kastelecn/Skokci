@@ -5,7 +5,8 @@ import logging
 from racunalnik import *
 
 # Privzeta minimax globina, Äe je nismo podali ob zagonu v ukazni vrstici
-GLOBINA = 1
+GLOBINA = 3
+
 
 def sredisce(lst):
     """Središče krogca na Canvasu z danim bounding box."""
