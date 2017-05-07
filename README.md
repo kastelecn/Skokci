@@ -13,3 +13,4 @@ Zmagovalec je prvi igralec, ki svojo figuro pripelje na sredinsko polje na naspr
 * racunalnik.py : igralec računalnik
 * Minimax.py : algoritem, ki ga za igro uporablja računalnik
 
+Datoteki Potek_igre.py in Skokci.py sta prva verzija igre, kjer je pravilno delala igra človek:človek. Zradi slabe organizacije podatkov nista bili uporabni za vključitev računalniškega igralca.
