@@ -1,10 +1,15 @@
 # Skokci
-Poenostavitev igre Pokemon Duel
+Poenostavitev igre Pokemon Duel.
 
-Načrt dela:
+##Navodila igre
+Vsak igralec ima na začetku na razpolago pet figur, ki so predstavljene s krogci izven plošče - sivi predstavljajo ekipo "Zajci", oranžni pa ekipo "Lisice". Vsak krog je na vrsti en igralec, ki ima na voljo samo eno potezo. Lahko se odloči, ali bo na ploščo postavil novega igralca (če ga ima na razpolago), ali pa bo premaknil figuro na plošči na sosedno polje. Če se odloči, da bo postavil novo figuro na ploščo, se lahko odloči le za vijolično označeni polji, ki sta mu najbližje. Veljavna polja, kamor se lahko prestavi, se pobarvajo z zeleno barvo.
+Če igralec nasprotnika obkoli iz vseh smeri s svojimi figurami, nasprotnik izgubi figuro.
+Zmagovalec je prvi igralec, ki svojo figuro pripelje na sredinsko polje na nasprotni strani plošče, ki je poudarjeno z rumenim kvadratkom.
 
-* skica uporabniškega vmesnika, začetek dela na GUI 22.3.
-* izdelava GUI 22.3.-29.3.
-* logika igre 29.3. - 5.4.
-* igra med 2 človekoma + računalnik kot igralec 5.4.-12.4.
-* testiranje in odprava napak 12.4.-19.4.
+##Datoteke
+* Skoki.py: delovanje uporabniskega vmesnika (GUI)
+* Igra.py : logika igre
+* clovek.py : človeški igralec
+* racunalnik.py : igralec računalnik
+* Minimax.py : algoritem, ki ga za igro uporablja računalnik
+
