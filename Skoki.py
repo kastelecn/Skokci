@@ -4,7 +4,7 @@ from clovek import *
 import logging
 from racunalnik import *
 
-# Privzeta minimax globina, Äe je nismo podali ob zagonu v ukazni vrstici
+# Privzeta minimax globina
 GLOBINA = 2
 
 
@@ -16,24 +16,27 @@ def sredisce(lst):
 class Gui():
     ROB = 100
     VELIKOST_STRANICE_PLOSCE = 400
+    # Velikost polj in figur
     r = 15
 
     def __init__(self, master):
+        # Ob novi igri se nastavita na človek/računalnik
         self.igralec_lisice = None
         self.igralec_zajci = None
-        master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
 
+        master.protocol("WM_DELETE_WINDOW", lambda: self.zapri_okno(master))
+        # Narišemo platno
         self.plosca = Canvas(master, width=Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.ROB,
                          height=Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.ROB,
                          bg='white')
-        #Začetni napisi in obvestila kdo je na vrsti
+        # Motivacijski napis, ki se ne spremeni do zmage
         self.pozdrav = StringVar(master, value="Kdo bo nov zmagovalec in kdo nova zguba?")
         self.moderator = Label(master, textvariable=self.pozdrav).grid(row=0, column=0)
         self.plosca.grid()
         # Glavni menu
         menu = Menu(master)
         master.config(menu=menu)
-        # Podmenu za izbiro igre
+        # Podmenu za izbiro načina igre
         menu_igra = Menu(menu)
         menu.add_cascade(label="Igra", menu=menu_igra)
 
@@ -53,9 +56,9 @@ class Gui():
 
 
 
-
+        # Klik pokliče funkcijo kliknjeno polje
         self.plosca.bind("<Button-1>", self.kliknjeno_polje)
-
+        # Pove nam, če imamo oznaceno figuro. Bo uporabno, ko bo gui ugotovil, ali izbiramo figuro (prvi klik) ali polje za premik (drugi klik)
         self.oznacena_figura = None
         self.polja = []
         self.igra = None
@@ -66,10 +69,12 @@ class Gui():
 
 
         #ZAČETNE KOORDINATE FIGUR
+        # na te koordinate bomo razvrstili lisice in zajce izven igralne plošče
         self.zacetna_lisice = [(Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - i/7 * Gui.VELIKOST_STRANICE_PLOSCE, 1/2*Gui.ROB) for i in range(5)]
         self.zacetna_zajci = [(Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - i/7 * Gui.VELIKOST_STRANICE_PLOSCE, 3/2*Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE) for i in range(5)]
 
-        #POUDARIVA VSTOPNA VPOLJA
+        #POUDARIVA VSTOPNA POLJA
+        # Samo za preglednost, ob kliku se vedno pobarvajo polja, kamor lahko premaknemo izbrano figuro
         p = self.plosca.create_oval(Gui.ROB - 3/2*Gui.r, Gui.ROB - 3/2*Gui.r,
                                 Gui.ROB + 3/2*Gui.r, Gui.ROB + 3/2*Gui.r , fill='DeepPink3')
         self.plosca.tag_lower(p)
@@ -87,6 +92,7 @@ class Gui():
         self.plosca.tag_lower(p)
 
         #POUDARIVA ZMAGOVALNA POLJA
+        # Rumena kvadratka označujeta zmagovalni polji.
         P = self.plosca.create_rectangle(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE - 2*Gui.r,
                                          Gui.ROB - 2* Gui.r,
                                          Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,
@@ -96,7 +102,8 @@ class Gui():
                                          Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,
                                          Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,fill='gold')
 
-        #NARIŠEMO SPODNJO ZUNANJO VRSTO
+        # Narišemo polja na plošči, ki jih ne bomo več spreminjali, in njihove gide spravimo v self.polja
+        # NARIŠEMO SPODNJO ZUNANJO VRSTO
         for i in range(7):
             #bounding_box
             bounding_box = (Gui.ROB + i/6 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
@@ -108,7 +115,7 @@ class Gui():
 
             self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO DESNO ZUNANJO VRSTO OD SPODAJ NAVZGOR
+        # NARIŠEMO DESNO ZUNANJO VRSTO OD SPODAJ NAVZGOR
         for i in range(4):
              bounding_box = (Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                              Gui.ROB + ((3-i) * Gui.VELIKOST_STRANICE_PLOSCE / 4) - Gui.r,
@@ -117,7 +124,7 @@ class Gui():
              krogec = self.plosca.create_oval(bounding_box, fill = 'white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO ZGORNJO ZUNANJO VRSTO OD DESNE PROTI LEVI
+        # NARIŠEMO ZGORNJO ZUNANJO VRSTO OD DESNE PROTI LEVI
         for i in range(6):
             bounding_box = ((Gui.ROB + (5 - i)/6 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                              Gui.ROB - Gui.r,
@@ -127,7 +134,7 @@ class Gui():
             krogec = self.plosca.create_oval(bounding_box, fill = 'white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO ZUNANJO LEVO VRSTO OD ZGORAJ DOL
+        # NARIŠEMO ZUNANJO LEVO VRSTO OD ZGORAJ DOL
         for i in range(3):
             bounding_box = (Gui.ROB - Gui.r,
                             Gui.ROB + ((i + 1) * Gui.VELIKOST_STRANICE_PLOSCE / 4) - Gui.r,
@@ -136,7 +143,7 @@ class Gui():
             krogec = self.plosca.create_oval(bounding_box, fill = 'white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO SPODNJO NOTRANJO VRSTO OD LEVE PROTI DESNI
+        # NARIŠEMO SPODNJO NOTRANJO VRSTO OD LEVE PROTI DESNI
         for i in range(3):
             bounding_box = (Gui.ROB + 1/3 * Gui.VELIKOST_STRANICE_PLOSCE + i / 6 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                             Gui.ROB + 2/3 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
@@ -145,7 +152,7 @@ class Gui():
             krogec = self.plosca.create_oval(bounding_box, fill='white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
-        # #NARIŠEMO DESNO NOTRANJO VRSTO OD SPODAJ NAVZGOR
+        # NARIŠEMO DESNO NOTRANJO VRSTO OD SPODAJ NAVZGOR
         for i in range(2):
              bounding_box = (Gui.ROB + 2/3 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                              Gui.ROB + 1/3 * Gui.VELIKOST_STRANICE_PLOSCE + (1-i)/6 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
@@ -155,7 +162,7 @@ class Gui():
              krogec = self.plosca.create_oval(bounding_box,fill='white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO ZGORNJO NOTRANJO VRSTO OD DESNE PROTI LEVI
+        # NARIŠEMO ZGORNJO NOTRANJO VRSTO OD DESNE PROTI LEVI
         for i in range(2):
              bounding_box = (Gui.ROB + 1 / 3 * Gui.VELIKOST_STRANICE_PLOSCE + (1-i) / 6 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                              Gui.ROB + 1 / 3 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
@@ -165,7 +172,7 @@ class Gui():
              krogec = self.plosca.create_oval(bounding_box,fill='white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
-        #NARIŠEMO ŠE ZADNJEGA (27)
+        # NARIŠEMO ŠE ZADNJEGA (27)
         bounding_box = (Gui.ROB + 1/3 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                          Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                          Gui.ROB + 1 / 3 * Gui.VELIKOST_STRANICE_PLOSCE + Gui.r,
@@ -175,12 +182,13 @@ class Gui():
         self.polja.append(((sredisce(bounding_box)), krogec))
 
 
-        #NARIŠIVA POVEZAVE
+        # NARIŠIVA POVEZAVE
         for (i,j) in Igra.povezave:
             p = self.plosca.create_line(self.polja[i][0], self.polja[j][0])
             self.plosca.tag_lower(p)
 
-        #NARIŠIVA ZAJCE IN LISICE
+        # NARIŠIVA ZAJCE IN LISICE (sivi oz oranžni krogci iste velikosti kot polja)
+        # Njihove gide damo v seznam self.zajci_gid in self.lisice_gid
         for i in range(5):
             zajec = self.plosca.create_oval(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
                                             3/2 * Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - Gui.r,
@@ -201,44 +209,55 @@ class Gui():
                           lambda: self.zacni_novo_igro(Clovek(self), Racunalnik(self, Minimax(GLOBINA))))
 
     def premakni_figure(self):
-        #osveži stanje na plošči
-        #PREMAKNIVA LISICE
+        # Osveži stanje na plošči
+        # Premaknimo lisice
         k = 0
+        # Najprej premaknemo tiste, ki so na plošči (seznam idjev zasedenih polj dobimo s self.lisice in self.zajci)
         na_plosci = len(self.igra.lisice)
         while k < na_plosci:
             (x, y) = self.polja[self.igra.lisice[k]][0]
+            self.plosca.itemconfig(self.lisice_gid[k], outline='black', fill='orange')
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
         i = 0
+        # Narišemo lisice ki so še na začetnih koordinatah
         while k < self.igra.stevilo_lisic_v_igri:
             (x, y) = self.zacetna_lisice[i]
+            self.plosca.itemconfig(self.lisice_gid[k], outline='black', fill='orange')
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
             k += 1
+        # Obkoljene lisice naredimo nevidne uporabniku
         while k < len(self.lisice_gid):
-            self.plosca.delete(self.lisice_gid[k])
+            self.plosca.itemconfig(self.lisice_gid[k], outline ='white', fill='white')
             k += 1
         #PREMAKNIVA ZAJCE
         k = 0
         na_plosci = len(self.igra.zajci)
+        # Zajci na plošči
         while k < na_plosci:
             (x, y) = self.polja[self.igra.zajci[k]][0]
+            self.plosca.itemconfig(self.zajci_gid[k], outline='black', fill='grey')
             self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
         i = 0
+        # Zajci na začetnih koordinatah
         while k < self.igra.stevilo_zajcev_v_igri:
             (x, y) = self.zacetna_zajci[i]
+            self.plosca.itemconfig(self.zajci_gid[k], outline='black', fill='grey')
             self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
             k += 1
+        # Naredimo nevidne obkoljene zajce
         while k < len(self.zajci_gid):
-            self.plosca.delete(self.zajci_gid[k])
+            self.plosca.itemconfig(self.zajci_gid[k], outline = 'white', fill = 'white')
             k += 1
 
 
 
     def kliknjeno_polje(self, event):
-        if self.igra is None: return # sploh ne igramo
+        # Pokliče se ob kliku
+        if self.igra is None: return None# sploh ne igramo
         # Izračunamo potezo
         x, y = event.x, event.y
         kliknjeno_polje = None
@@ -302,6 +321,7 @@ class Gui():
                     pass
 
     def povleci_potezo(self, poteza):
+        # pokliče self.igra.povleci_potezo in če ta ne vrne None, premakne figure, zamenja igralca na potezi in v primeru zmage izpiše zmagovalni napis
         print ("GUI vleče potezo {0} v poziciji {1}".format(poteza, (self.igra.zajci, self.igra.lisice)))
         figura, polje = poteza
         r = self.igra.povleci_potezo(figura, polje)
@@ -341,20 +361,19 @@ class Gui():
         self.igralec_lisice.igraj()
 
     def prekini_igralce(self):
-        """Sporoči igralcem, da morajo nehati razmišlljati."""
+        # Sporoči igralcem, da morajo nehati razmišlljati
         logging.debug ("prekinjam igralce")
         if self.igralec_lisice: self.igralec_lisice.prekini()
         if self.igralec_zajci: self.igralec_zajci.prekini()
 
     def naredi_napis_na_koncu(self, zmagovalec):
-        #Nakoncu na platno izpiše, kdo je zmagal
+        #Na koncu na platno izpiše, kdo je zmagal
         self.napis_na_koncu = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, font=('Purisa', 20), text='ZMAGOVALCI SO {}'.format(zmagovalec),
                                 fill='red')
 
 
     def zapri_okno(self, master):
-        # """Ta metoda se pokliče, ko uporabnik zapre aplikacijo."""
-        # Kasneje bo tu treba še kaj narediti
+        # Ta metoda se pokliče, ko uporabnik zapre aplikacijo
         master.destroy()
 
 
