@@ -45,9 +45,11 @@ class Minimax:
 
     # Vrednosti igre
     ZMAGA = 100000 # Mora biti vsaj 10^5
-    NESKONCNO = ZMAGA + 1 # VeÄ kot zmaga
+    NESKONCNO = ZMAGA + 1 # Več kot zmaga
+
+    #kje se figure premikajo
     POTI_ZA_ZAJCE = [[3,4,5,6,7,8,9,10,11,12,13], [3,2,1,0,19,18,17,16,15,14,13], [3,4,21,22,23,24,25,14,13], [3,4,5,6,22,23,24,10,11,12,13],
-                     [3,2,1,0,20,27,26,25,14,13], [3,2,1,0,20,27,26,16,15,14,13], [6,7,8,9,10,24,25,14,13], [0,19,18,17,16,26,25,14,13]]
+                     [3,2,1,0,20,27,26,25,14,13], [3,2,1,0,20,27,26,16,15,14,13], [6,7,8,9,10, 24,25,14,13], [0,19,18,17,16,26,25,14,13]]
     POTI_ZA_LISICE = [[13,12,11,10,9,8,7,6,5,4,3], [13,14,15,16,17,18,19,0,1,2,3], [13,12,11,10,24,23,22,21,4,3], [13,14,15,16,26,27,20,21,4,3],
                       [13,12,11,10,24,23,22,21,4,3], [13,12,11,10,24,23,22,6,5,4,3], [16,17,18,19,0,20,21,4,3], [10,9,8,7,6,22,21,4,3]]
 
@@ -60,6 +62,17 @@ class Minimax:
             #če bomo imeli več kot 3 lisice na plošči vrednost malo zmanjšamo, da se ne zacikla
             if len(self.igra.lisice) > 3:
                 vrednost -= 100 * len(self.igra.lisice)
+
+            #poskrbimo da bodo figure, ki branijo cilj nasprotnikov:
+            napadalni_zajci = 0
+            for i in self.igra.zajci:
+                if i in [11,12,13,14,15,24,25,26]:
+                    napadalni_zajci += 1
+            branilne_lisice = 0
+            for i in self.igra.lisice:
+                if i in [12,13,14,25]:
+                    branilne_lisice +=1
+            vrednost += (branilne_lisice - napadalni_zajci ) * 100
             #pogledamo kako blizu cilja smo
             for i in self.igra.lisice:
                 dolzine = []
@@ -164,7 +177,7 @@ class Minimax:
 
 
     def minimax(self, globina, maksimiziramo):
-        print('sem v minimaxu')
+
         if self.prekinitev:
             logging.debug ("Minimax prekinja, globina = {0}".format(globina))
             return (None, None, 0)
@@ -185,7 +198,7 @@ class Minimax:
                 if maksimiziramo:
                     # Maksimiziramo
                     najboljsa_poteza = (None, None)
-                    print('sem globoko')
+
                     vrednost_najboljse = -Minimax.NESKONCNO
                     for (figura, polja) in self.igra.veljavne_poteze()[self.igra.na_potezi]:
                         #za vsako figuro mora preveriti vrednost vseh možnih polj

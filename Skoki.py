@@ -5,7 +5,7 @@ import logging
 from racunalnik import *
 
 # Privzeta minimax globina, Äe je nismo podali ob zagonu v ukazni vrstici
-GLOBINA = 3
+GLOBINA = 2
 
 
 def sredisce(lst):
@@ -14,9 +14,9 @@ def sredisce(lst):
     return ((x1+x2)/2, (y1+y2)/2)
 
 class Gui():
-    ROB = 100
-    VELIKOST_STRANICE_PLOSCE = 400
-    r = 10
+    ROB = 200
+    VELIKOST_STRANICE_PLOSCE = 600
+    r = 20
 
     def __init__(self, master):
         self.igralec_lisice = None
@@ -220,6 +220,8 @@ class Gui():
             i += 1
             k += 1
 
+
+
     def kliknjeno_polje(self, event):
         if self.igra is None: return # sploh ne igramo
         # Izračunamo potezo
@@ -301,7 +303,9 @@ class Gui():
                 self.igralec_lisice.igraj()
             elif self.igra.na_potezi == None:
                 # igre je konec
-                assert False, "KONEC IGRE NI NAREJEN"
+                zmagovalec = self.igra.stanje_igre()
+                self.naredi_napis_na_koncu(zmagovalec)
+
             else:
                 assert False, "nedefinirano stanje igre"
 
