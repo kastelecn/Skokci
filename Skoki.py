@@ -14,9 +14,9 @@ def sredisce(lst):
     return ((x1+x2)/2, (y1+y2)/2)
 
 class Gui():
-    ROB = 200
-    VELIKOST_STRANICE_PLOSCE = 600
-    r = 20
+    ROB = 100
+    VELIKOST_STRANICE_PLOSCE = 400
+    r = 15
 
     def __init__(self, master):
         self.igralec_lisice = None
@@ -69,7 +69,6 @@ class Gui():
         self.zacetna_lisice = [(Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - i/7 * Gui.VELIKOST_STRANICE_PLOSCE, 1/2*Gui.ROB) for i in range(5)]
         self.zacetna_zajci = [(Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - i/7 * Gui.VELIKOST_STRANICE_PLOSCE, 3/2*Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE) for i in range(5)]
 
-
         #POUDARIVA VSTOPNA VPOLJA
         p = self.plosca.create_oval(Gui.ROB - 3/2*Gui.r, Gui.ROB - 3/2*Gui.r,
                                 Gui.ROB + 3/2*Gui.r, Gui.ROB + 3/2*Gui.r , fill='DeepPink3')
@@ -87,6 +86,16 @@ class Gui():
                                 fill='DeepPink3')
         self.plosca.tag_lower(p)
 
+        #POUDARIVA ZMAGOVALNA POLJA
+        P = self.plosca.create_rectangle(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE - 2*Gui.r,
+                                         Gui.ROB - 2* Gui.r,
+                                         Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,
+                                         Gui.ROB + 2 * Gui.r,fill='gold')
+        P = self.plosca.create_rectangle(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE - 2*Gui.r,
+                                         Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE - 2* Gui.r,
+                                         Gui.ROB + 1 / 2 * Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,
+                                         Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.r,fill='gold')
+
         #NARIŠEMO SPODNJO ZUNANJO VRSTO
         for i in range(7):
             #bounding_box
@@ -95,7 +104,7 @@ class Gui():
                                              Gui.ROB + i / 6 * Gui.VELIKOST_STRANICE_PLOSCE + Gui.r,
                                              Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE + Gui.r)
 
-            krogec = self.plosca.create_oval(bounding_box)
+            krogec = self.plosca.create_oval(bounding_box, fill = 'white')
 
             self.polja.append(((sredisce(bounding_box)), krogec))
 
@@ -105,7 +114,7 @@ class Gui():
                              Gui.ROB + ((3-i) * Gui.VELIKOST_STRANICE_PLOSCE / 4) - Gui.r,
                              Gui.ROB + Gui.VELIKOST_STRANICE_PLOSCE + Gui.r,
                              Gui.ROB + ((3-i)) * Gui.VELIKOST_STRANICE_PLOSCE / 4 + Gui.r)
-             krogec = self.plosca.create_oval(bounding_box)
+             krogec = self.plosca.create_oval(bounding_box, fill = 'white')
              self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠEMO ZGORNJO ZUNANJO VRSTO OD DESNE PROTI LEVI
@@ -115,7 +124,7 @@ class Gui():
                              Gui.ROB + (5 - i)/6 * Gui.VELIKOST_STRANICE_PLOSCE + Gui.r,
                              Gui.ROB + Gui.r))
 
-            krogec = self.plosca.create_oval(bounding_box)
+            krogec = self.plosca.create_oval(bounding_box, fill = 'white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠEMO ZUNANJO LEVO VRSTO OD ZGORAJ DOL
@@ -124,7 +133,7 @@ class Gui():
                             Gui.ROB + ((i + 1) * Gui.VELIKOST_STRANICE_PLOSCE / 4) - Gui.r,
                             Gui.ROB + Gui.r,
                             Gui.ROB + ((i + 1)) * Gui.VELIKOST_STRANICE_PLOSCE / 4 + Gui.r)
-            krogec = self.plosca.create_oval(bounding_box)
+            krogec = self.plosca.create_oval(bounding_box, fill = 'white')
             self.polja.append(((sredisce(bounding_box)), krogec))
 
         #NARIŠEMO SPODNJO NOTRANJO VRSTO OD LEVE PROTI DESNI
@@ -165,6 +174,7 @@ class Gui():
         krogec = self.plosca.create_oval(bounding_box,fill='white')
         self.polja.append(((sredisce(bounding_box)), krogec))
 
+
         #NARIŠIVA POVEZAVE
         for (i,j) in Igra.povezave:
             p = self.plosca.create_line(self.polja[i][0], self.polja[j][0])
@@ -201,10 +211,12 @@ class Gui():
             k += 1
         i = 0
         while k < self.igra.stevilo_lisic_v_igri:
-
             (x, y) = self.zacetna_lisice[i]
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
+            k += 1
+        while k < len(self.lisice_gid):
+            self.plosca.delete(self.lisice_gid[k])
             k += 1
         #PREMAKNIVA ZAJCE
         k = 0
@@ -218,6 +230,9 @@ class Gui():
             (x, y) = self.zacetna_zajci[i]
             self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
+            k += 1
+        while k < len(self.zajci_gid):
+            self.plosca.delete(self.zajci_gid[k])
             k += 1
 
 
@@ -257,6 +272,7 @@ class Gui():
                             # oznacimo lisico, ki je kliknjena
                             self.oznacen = True
                             self.oznacena_figura = (self.igra.cakajoca_lisica, None)
+                            self.pobarvaj(self.igra.mozna_polja(self.oznacena_figura), 'SeaGreen2')
         else:
             # kliknili smo na polje
             if self.oznacen:
