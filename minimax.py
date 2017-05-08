@@ -63,7 +63,11 @@ class Minimax:
             if len(self.igra.lisice) > 3:
                 vrednost -= 100 * len(self.igra.lisice)
 
-            #poskrbimo da bodo figure, ki branijo cilj nasprotnikov:
+            if (0 or 6) in self.igra.lisice:
+                vrednost += 500
+
+
+            #poskrbimo da bodo nekater figure branile cilj:
             napadalni_zajci = 0
             for i in self.igra.zajci:
                 if i in [11,12,13,14,15,24,25,26]:
@@ -72,11 +76,17 @@ class Minimax:
             for i in self.igra.lisice:
                 if i in [12,13,14,25]:
                     branilne_lisice +=1
-            vrednost += (branilne_lisice - napadalni_zajci ) * 100
+            vrednost += (branilne_lisice - napadalni_zajci ) * 500
+
+            for i in [12,13,14,25]:
+                if i in self.igra.lisice:
+                    vrednost += 350
+
             #pogledamo kako blizu cilja smo
             for i in self.igra.lisice:
                 dolzine = []
                 slabe_dolzine = []
+
 
                 for pot in Minimax.POTI_ZA_LISICE:
                     if i in pot:
@@ -126,6 +136,25 @@ class Minimax:
         if self.jaz == Igra.zajci:
             if len(self.igra.zajci) > 3:
                 vrednost -= 100 * len(self.igra.zajci)
+            if (16 or 10) in self.igra.zajci:
+                vrednost += 500
+
+
+
+                    # poskrbimo da bodo nekater figure branile cilj:
+                napadalne_lisice = 0
+                for i in self.igra.lisice:
+                    if i in [1,2,3,4,5,21,22,20]:
+                        napadalne_lisice += 1
+                branilni_zajci = 0
+                for i in self.igra.zajci:
+                    if i in [2,3,4,21]:
+                        branilni_zajci += 1
+                vrednost += (branilni_zajci - napadalne_lisice) * 500
+
+                for i in [2,3,4,21]:
+                    if i in self.igra.zajci:
+                        vrednost += 350
             for i in self.igra.zajci:
                 dolzine = []
                 slabe_dolzine = []
@@ -205,7 +234,7 @@ class Minimax:
                         for polje in polja:
                             print ("minimax: poteza {0}, {1} v poziciji:\n{2}".format(figura, polje, (self.igra.zajci, self.igra.lisice)))
                             r = self.igra.povleci_potezo(figura, polje)
-                            assert (r is not None), "minimax je hotel poveči nevejavno potezo {0}".format((figura, polje))
+                            assert (r != (None, None)), "minimax je hotel poveči neveljavno potezo {0}".format((figura, polje))
                             vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
                             self.igra.razveljavi()
                             if vrednost > vrednost_najboljse:
