@@ -36,7 +36,7 @@ class Racunalnik():
 
     def preveri_potezo(self):
         """Vsakih 100ms preveri, ali je algoritem že izračunal potezo."""
-        if self.algoritem.poteza is not None:
+        if self.algoritem.poteza != (None, None):
             # Algoritem je našel potezo, povleci jo, če ni bilo prekinitve
             print ("Racunalnik vleče potezo {0}".format(self.algoritem.poteza))
             self.gui.povleci_potezo(self.algoritem.poteza)
