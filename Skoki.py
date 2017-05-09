@@ -3,9 +3,10 @@ from Igra import *
 from clovek import *
 import logging
 from racunalnik import *
+import argparse   # za argumente iz ukazne vrstice
 
 # Privzeta minimax globina
-GLOBINA = 3
+GLOBINA = 5
 
 
 def sredisce(lst):
@@ -19,7 +20,7 @@ class Gui():
     # Velikost polj in figur
     r = 15
 
-    def __init__(self, master):
+    def __init__(self, master, globina):
         # Ob novi igri se nastavita na človek/računalnik
         self.igralec_lisice = None
         self.igralec_zajci = None
@@ -36,25 +37,58 @@ class Gui():
         # Glavni menu
         menu = Menu(master)
         master.config(menu=menu)
+
         # Podmenu za izbiro načina igre
-        menu_igra = Menu(menu)
+        menu_igra = Menu(menu, tearoff = 0)
+
+        podmenu_tezavnost1 = Menu(menu, tearoff = 0)
+        podmenu_tezavnost2 = Menu(menu, tearoff = 0)
+        podmenu_tezavnost3 = Menu(menu, tearoff = 0)
+
         menu.add_cascade(label="Igra", menu=menu_igra)
 
         menu_igra.add_command(label="Lisice=Človek, Zajci=Človek",
                               command=lambda: self.zacni_novo_igro(Clovek(self),
                                                               Clovek(self)))
 
-        menu_igra.add_command(label="Lisice=Človek, Zajci=Računalnik",
+        menu_igra.add_cascade(label="Lisice=Človek, Zajci=Računalnik", menu=podmenu_tezavnost1)
+        menu_igra.add_cascade(label="Lisice=Računalnik, Zajci=Človek", menu=podmenu_tezavnost2)
+        menu_igra.add_cascade(label="Lisice=Računalnik, Zajci=Računalnik", menu=podmenu_tezavnost3)
+
+
+        #podmenuji za tezavnost
+        #lahka tezavnost
+        podmenu_tezavnost1.add_command(label="Lahko",
                             command=lambda: self.zacni_novo_igro(Clovek(self),
                                                           Racunalnik(self, Minimax(GLOBINA))))
-        menu_igra.add_command(label="Lisice=Računalnik, Zajci=Človek",
+        podmenu_tezavnost2.add_command(label="Lahko",
                             command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA)),
                                                           Clovek(self)))
-        menu_igra.add_command(label="Lisice=Računalnik, Zajci=Računalnik",
+        podmenu_tezavnost3.add_command(label="Lahko",
                             command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA)),
                                                           Racunalnik(self, Minimax(GLOBINA))))
 
+        #srednja tezavnost
+        podmenu_tezavnost1.add_command(label="Srednje",
+                                    command=lambda: self.zacni_novo_igro(Clovek(self),
+                                                                         Racunalnik(self, Minimax(GLOBINA+1))))
+        podmenu_tezavnost2.add_command(label="Srednje",
+                                    command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA+1)),
+                                                                         Clovek(self)))
+        podmenu_tezavnost3.add_command(label="Srednje",
+                                    command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA+1)),
+                                                                         Racunalnik(self, Minimax(GLOBINA+1))))
 
+        #težka težavnost
+        podmenu_tezavnost1.add_command(label="Težko",
+                                    command=lambda: self.zacni_novo_igro(Clovek(self),
+                                                                         Racunalnik(self, Minimax(GLOBINA+2))))
+        podmenu_tezavnost2.add_command(label="Težko",
+                                    command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA+2)),
+                                                                         Clovek(self)))
+        podmenu_tezavnost3.add_command(label="Težko",
+                                    command=lambda: self.zacni_novo_igro(Racunalnik(self, Minimax(GLOBINA+2)),
+                                                                         Racunalnik(self, Minimax(GLOBINA+2))))
 
         # Klik pokliče funkcijo kliknjeno polje
         self.plosca.bind("<Button-1>", self.kliknjeno_polje)
@@ -214,12 +248,14 @@ class Gui():
         # Premaknimo lisice
         k = 0
         # Najprej premaknemo tiste, ki so na plošči (seznam idjev zasedenih polj dobimo s self.lisice in self.zajci)
+        #PREMIKAVA LISICE
         na_plosci = len(self.igra.lisice)
         while k < na_plosci:
             (x, y) = self.polja[self.igra.lisice[k]][0]
             self.plosca.itemconfig(self.lisice_gid[k], outline='black', fill='orange')
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
+            print(k, self.lisice_gid, 'na plosci', na_plosci)
         i = 0
         # Narišemo lisice ki so še na začetnih koordinatah
         while k < self.igra.stevilo_lisic_v_igri:
@@ -228,10 +264,15 @@ class Gui():
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
             k += 1
+            print(k, self.lisice_gid, 'na začetku', self.igra.stevilo_lisic_v_igri)
         # Obkoljene lisice naredimo nevidne uporabniku
         while k < len(self.lisice_gid):
-            self.plosca.itemconfig(self.lisice_gid[k], outline ='white', fill='white')
+            (x, y) = self.zacetna_lisice[i]
+            self.plosca.itemconfig(self.lisice_gid[k], fill='white')
+            self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
+            i +=1
             k += 1
+            print(k, self.lisice_gid, 'nevidne', len(self.lisice_gid))
         #PREMAKNIVA ZAJCE
         k = 0
         na_plosci = len(self.igra.zajci)
@@ -323,10 +364,10 @@ class Gui():
 
     def povleci_potezo(self, poteza):
         # pokliče self.igra.povleci_potezo in če ta ne vrne None, premakne figure, zamenja igralca na potezi in v primeru zmage izpiše zmagovalni napis
-        print ("GUI vleče potezo {0} v poziciji {1}".format(poteza, (self.igra.zajci, self.igra.lisice)))
+
         figura, polje = poteza
         r = self.igra.povleci_potezo(figura, polje)
-        print ("GUI status poteze je {0}, pozicija je zdaj {1}".format(r, (self.igra.zajci, self.igra.lisice)))
+
         if r is None:
             # poteza ni veljavna
             pass
@@ -385,8 +426,39 @@ class Gui():
         # Ta metoda se pokliče, ko uporabnik zapre aplikacijo
         master.destroy()
 
+############################
+#Glavni program
+if __name__ == "__main__":
 
-root = Tk()
-root.title('Gui')
-aplikacija = Gui(root)
-root.mainloop()
+
+    # Opišemo argumente, ki jih sprejmemo iz ukazne vrstice
+    parser = argparse.ArgumentParser(description="Igrica Skokci")
+    # Argument --globina n, s privzeto vrednostjo MINIMAX_GLOBINA
+    parser.add_argument('--globina',
+                        default = GLOBINA,
+                        type=int,
+                        help='globina iskanja za minimax algoritem')
+    # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
+    parser.add_argument('--debug',
+                        action='store_true',
+                        help='vklopi sporoÄčila o dogajanju')
+
+    # Obdelamo argumente iz ukazne vrstice
+    args = parser.parse_args()
+
+    # Vklopimo sporoÄila, še je uporabnik podal --debug
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+
+    # Naredimo glavno okno in nastavimo ime
+    root = Tk()
+    root.title("Skokci")
+
+    # Naredimo objekt razreda Gui in ga spravimo v spremenljivko,
+    # sicer bo Python mislil, da je objekt neuporabljen in ga bo pobrisal
+    # iz pomnilnika.
+    aplikacija = Gui(root, args.globina)
+
+    # Kontrolo prepustimo glavnemu oknu. Funkcija mainloop neha
+    # delovati, ko okno zapremo.
+    root.mainloop()
