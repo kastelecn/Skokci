@@ -49,6 +49,8 @@ class Minimax:
                      [3,2,1,0,20,27,26,25,14,13], [3,2,1,0,20,27,26,16,15,14,13], [6,7,8,9,10, 24,25,14,13], [0,19,18,17,16,26,25,14,13]]
     POTI_ZA_LISICE = [[13,12,11,10,9,8,7,6,5,4,3], [13,14,15,16,17,18,19,0,1,2,3], [13,12,11,10,24,23,22,21,4,3], [13,14,15,16,26,27,20,21,4,3],
                       [13,12,11,10,24,23,22,21,4,3], [13,12,11,10,24,23,22,6,5,4,3], [16,17,18,19,0,20,21,4,3], [10,9,8,7,6,22,21,4,3]]
+    ZGORNJA_VRSTA_IDJI = [i for i in range(10, 17)]
+    SPODNJA_VRSTA_IDJI = [i for i in range(7)]
 
 
     def vrednost_pozicije(self):
@@ -63,7 +65,6 @@ class Minimax:
             if (0 or 6) in self.igra.lisice:
                 vrednost += 500
 
-
             #poskrbimo da bodo nekater figure branile cilj:
             napadalni_zajci = 0
             for i in self.igra.zajci:
@@ -73,17 +74,25 @@ class Minimax:
             for i in self.igra.lisice:
                 if i in [12,13,14,25]:
                     branilne_lisice +=1
-            vrednost += (branilne_lisice - napadalni_zajci ) * 500
+            vrednost += (branilne_lisice - napadalni_zajci ) * 250
 
-            for i in [12,13,14,25]:
-                if i in self.igra.lisice:
-                    vrednost += 350
+            zasedenost = ''
+            for i in Minimax.SPODNJA_VRSTA_IDJI:
+                if i in self.igra.zajci:
+                    zasedenost += 'Z'
+                elif i in self.igra.lisice:
+                    zasedenost += 'L'
+                else:
+                    zasedenost += 'N'
+            if 'LZNL' in zasedenost:
+                vrednost += 2000
+            if 'LNZL' in zasedenost:
+                vrednost += 2000
 
             #pogledamo kako blizu cilja smo
             for i in self.igra.lisice:
                 dolzine = []
                 slabe_dolzine = []
-
 
                 for pot in Minimax.POTI_ZA_LISICE:
                     if i in pot:
@@ -106,7 +115,6 @@ class Minimax:
                 (figura, polje) = ((Igra.lisica, i), i)
                 if self.igra.ali_je_obkoljen(figura, polje):
                     vrednost += 40000
-
 
             for i in self.igra.zajci:
                 dolzine = []
@@ -136,22 +144,31 @@ class Minimax:
             if (16 or 10) in self.igra.zajci:
                 vrednost += 500
 
+            # poskrbimo da bodo nekatere figure branile cilj:
+            napadalne_lisice = 0
+            for i in self.igra.lisice:
+                if i in [1,2,3,4,5,21,22,20]:
+                    napadalne_lisice += 1
+            branilni_zajci = 0
+            for i in self.igra.zajci:
+                if i in [2,3,4,21]:
+                    branilni_zajci += 1
+            vrednost += (branilni_zajci - napadalne_lisice) * 250
 
-
-                # poskrbimo da bodo nekatere figure branile cilj:
-                napadalne_lisice = 0
-                for i in self.igra.lisice:
-                    if i in [1,2,3,4,5,21,22,20]:
-                        napadalne_lisice += 1
-                branilni_zajci = 0
-                for i in self.igra.zajci:
-                    if i in [2,3,4,21]:
-                        branilni_zajci += 1
-                vrednost += (branilni_zajci - napadalne_lisice) * 500
-
-                for i in [2,3,4,21]:
-                    if i in self.igra.zajci:
-                        vrednost += 350
+            
+            zasedenost = ''
+            for i in Minimax.ZGORNJA_VRSTA_IDJI:
+                if i in self.igra.zajci:
+                    zasedenost += 'Z'
+                elif i in self.igra.lisice:
+                    zasedenost += 'L'
+                else:
+                    zasedenost += 'N'
+            if 'ZNLZ' in zasedenost:
+                vrednost += 2000
+            if 'ZLNZ' in zasedenost:
+                vrednost += 2000
+                
             for i in self.igra.zajci:
                 dolzine = []
                 slabe_dolzine = []
@@ -215,7 +232,6 @@ class Minimax:
                 return (None, None, -Minimax.ZMAGA)
         elif zmagovalec == None:
             # Igre ni konec
-            print(self.vrednost_pozicije())
             if globina == 0:
                 return (None, None, self.vrednost_pozicije())
             else:
@@ -228,7 +244,6 @@ class Minimax:
                     for (figura, polja) in self.igra.veljavne_poteze()[self.igra.na_potezi]:
                         #za vsako figuro mora preveriti vrednost vseh možnih polj
                         for polje in polja:
-                            print ("minimax: poteza {0}, {1} v poziciji:\n{2}".format(figura, polje, (self.igra.zajci, self.igra.lisice)))
                             r = self.igra.povleci_potezo(figura, polje)
                             assert (r != (None, None)), "minimax je hotel poveči neveljavno potezo {0}".format((figura, polje))
                             vrednost = self.minimax(globina - 1, not maksimiziramo)[2]
