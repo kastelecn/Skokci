@@ -255,7 +255,6 @@ class Gui():
             self.plosca.itemconfig(self.lisice_gid[k], outline='black', fill='orange')
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             k += 1
-            print(k, self.lisice_gid, 'na plosci', na_plosci)
         i = 0
         # Narišemo lisice ki so še na začetnih koordinatah
         while k < self.igra.stevilo_lisic_v_igri:
@@ -264,7 +263,6 @@ class Gui():
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i += 1
             k += 1
-            print(k, self.lisice_gid, 'na začetku', self.igra.stevilo_lisic_v_igri)
         # Obkoljene lisice naredimo nevidne uporabniku
         while k < len(self.lisice_gid):
             (x, y) = self.zacetna_lisice[i]
@@ -272,7 +270,6 @@ class Gui():
             self.plosca.coords(self.lisice_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
             i +=1
             k += 1
-            print(k, self.lisice_gid, 'nevidne', len(self.lisice_gid))
         #PREMAKNIVA ZAJCE
         k = 0
         na_plosci = len(self.igra.zajci)
@@ -292,7 +289,10 @@ class Gui():
             k += 1
         # Naredimo nevidne obkoljene zajce
         while k < len(self.zajci_gid):
-            self.plosca.itemconfig(self.zajci_gid[k], outline = 'white', fill = 'white')
+            (x, y) = self.zacetna_zajci[i]
+            self.plosca.itemconfig(self.zajci_gid[k], fill='white')
+            self.plosca.coords(self.zajci_gid[k], x - Gui.r, y - Gui.r, x + Gui.r, y + Gui.r)
+            i +=1
             k += 1
 
 
