@@ -5,7 +5,7 @@ import logging
 from racunalnik import *
 
 # Privzeta minimax globina
-GLOBINA = 2
+GLOBINA = 3
 
 
 def sredisce(lst):
@@ -30,7 +30,7 @@ class Gui():
                          height=Gui.VELIKOST_STRANICE_PLOSCE + 2 * Gui.ROB,
                          bg='white')
         # Motivacijski napis, ki se ne spremeni do zmage
-        self.pozdrav = StringVar(master, value="Kdo bo nov zmagovalec in kdo nova zguba?")
+        self.pozdrav = StringVar(master, value="Na vrsti za potezo so LISICE.")
         self.moderator = Label(master, textvariable=self.pozdrav).grid(row=0, column=0)
         self.plosca.grid()
         # Glavni menu
@@ -65,7 +65,8 @@ class Gui():
         self.lisice_gid= []
         self.zajci_gid = []
         self.oznacen = False
-        self.napis_na_koncu = None
+        self.napis_na_koncu1 = None
+        self.napis_na_koncu2 = None
 
 
         #ZAČETNE KOORDINATE FIGUR
@@ -332,6 +333,7 @@ class Gui():
         else:
             # poteza je veljavna
             self.premakni_figure()
+            self.pozdrav.set('Na vrsti za potezo so {}'.format(self.igra.na_potezi))
             # naslednji odigra potezo
             if self.igra.na_potezi == Igra.zajci:
                 self.igralec_zajci.igraj()
@@ -341,6 +343,7 @@ class Gui():
                 # igre je konec
                 zmagovalec = self.igra.stanje_igre()
                 self.naredi_napis_na_koncu(zmagovalec)
+                self.pozdrav.set('Bravo!')
 
             else:
                 assert False, "nedefinirano stanje igre"
@@ -352,13 +355,16 @@ class Gui():
             self.plosca.itemconfig(self.polja[i][1], fill=barva)
 
     def zacni_novo_igro(self, igralec_lisice, igralec_zajci):
+        self.plosca.itemconfig([self.polja], fill='white')
+        self.pozdrav.set('Na vrsti za potezo so LISICE')
         self.prekini_igralce()
         self.igralec_lisice = igralec_lisice
         self.igralec_zajci = igralec_zajci
         self.igra = Igra()
-        self.plosca.delete(self.napis_na_koncu)
+        self.plosca.delete(self.napis_na_koncu1, self.napis_na_koncu2)
         self.premakni_figure()
         self.igralec_lisice.igraj()
+
 
     def prekini_igralce(self):
         # Sporoči igralcem, da morajo nehati razmišlljati
@@ -368,8 +374,11 @@ class Gui():
 
     def naredi_napis_na_koncu(self, zmagovalec):
         #Na koncu na platno izpiše, kdo je zmagal
-        self.napis_na_koncu = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, font=('Purisa', 20), text='ZMAGOVALCI SO {}'.format(zmagovalec),
-                                fill='red')
+        self.napis_na_koncu1 = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/3 * Gui.VELIKOST_STRANICE_PLOSCE, font=('fixedsys', 30), text='ZMAGOVALCI SO',
+                                fill='DodgerBlue2')
+        self.napis_na_koncu2 = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, font=('fixedsys', 50), text='{}'.format(zmagovalec),
+                                fill='red3')
+
 
 
     def zapri_okno(self, master):
