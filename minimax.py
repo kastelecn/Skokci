@@ -77,7 +77,6 @@ class Minimax:
                     branilne_lisice +=1
             vrednost += (branilne_lisice - napadalni_zajci ) * 150
 
-
             #obravnavamo posebno situacijo blizu konca
             zasedenost = ''
             for i in Minimax.SPODNJA_VRSTA_IDJI:
@@ -104,40 +103,21 @@ class Minimax:
                             dolzine.append(len(pot[indeks:]))
                             if len(pot) > indeks +2 and pot[indeks + 2]  in self.igra.zajci: #če smo blizu nasprotnikom ni najbolje
                                 vrednost -= 50
-
                         else:
                             slabe_dolzine.append(len(pot[indeks:]))
-
 
                 if len(dolzine) > 0:
                     vrednost += Minimax.ZMAGA // 10 - min(dolzine) * 200
                 elif len(slabe_dolzine) > 0:
                     vrednost += Minimax.ZMAGA // 10 - min(slabe_dolzine) * 250
 
-                #poglejmo še če sm koga obkolili
+                #poglejmo še če smo koga obkolili
                 (figura, polje) = ((Igra.lisica, i), i)
                 if self.igra.ali_je_obkoljen(figura, polje):
                     vrednost += 400000
 
-            #enake stavri pogledamo se za nasprotnika
+            #pogledamo še če je nasprotnik obkoljen
             for i in self.igra.zajci:
-                # dolzine = []
-                # slabe_dolzine = []
-                # for pot in Minimax.POTI_ZA_ZAJCE:
-                #     if i in pot:
-                #         indeks = pot.index(i)
-                #         if pot[indeks+1] not in self.igra.lisice:
-                #             dolzine.append(len(pot[indeks:]))
-                #             if len(pot) > indeks +2 and pot[indeks + 2] in self.igra.lisice:
-                #                 vrednost += 50
-                #
-                #         else:
-                #             slabe_dolzine.append(len(pot[indeks:]))
-                # if len(dolzine) > 0:
-                #     vrednost -= Minimax.ZMAGA // 10 - min(dolzine) * 200
-                # elif len(slabe_dolzine) > 0:
-                #     vrednost -= Minimax.ZMAGA // 10 - min(slabe_dolzine) * 250
-
                 (figura, polje) = ((Igra.zajec, i), i)
                 if self.igra.ali_je_obkoljen(figura, polje):
                     vrednost -= 400000
@@ -203,24 +183,6 @@ class Minimax:
 
             #enako pogledamo se za nasprotnika
             for i in self.igra.lisice:
-                # dolzine = []
-                # for pot in Minimax.POTI_ZA_LISICE:
-                #     if i in pot:
-                #         indeks = pot.index(i)
-                #         if pot[indeks + 1] not in self.igra.zajci:
-                #             dolzine.append(len(pot[indeks:]))
-                #             if len(pot) > indeks +2 and pot[indeks + 2] in self.igra.lisice:
-                #                 vrednost += 50
-                #
-                #             if len(pot) > indeks +2 and pot[indeks + 2] in self.igra.zajci:
-                #                 vrednost += 50
-                #
-                #         else:
-                #             slabe_dolzine.append(len(pot[indeks:]))
-                # if len(dolzine) > 0:
-                #     vrednost -= Minimax.ZMAGA // 10 - min(dolzine) * 200
-                # elif len(slabe_dolzine) > 0:
-                #     vrednost -= Minimax.ZMAGA // 10 - min(slabe_dolzine) * 250
                 (figura, polje) = ((Igra.lisica, i), i)
                 if self.igra.ali_je_obkoljen(figura, polje):
                     vrednost += 400000
