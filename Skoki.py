@@ -6,7 +6,7 @@ from racunalnik import *
 import argparse   # za argumente iz ukazne vrstice
 
 # Privzeta minimax globina
-GLOBINA = 5
+GLOBINA = 3
 
 
 def sredisce(lst):
@@ -15,10 +15,10 @@ def sredisce(lst):
     return ((x1+x2)/2, (y1+y2)/2)
 
 class Gui():
-    ROB = 100
-    VELIKOST_STRANICE_PLOSCE = 400
+    ROB = 200
+    VELIKOST_STRANICE_PLOSCE = 500
     # Velikost polj in figur
-    r = 15
+    r = 20
 
     def __init__(self, master, globina):
         # Ob novi igri se nastavita na človek/računalnik
@@ -418,7 +418,7 @@ class Gui():
         self.napis_na_koncu1 = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/3 * Gui.VELIKOST_STRANICE_PLOSCE, font=('fixedsys', 30), text='ZMAGOVALCI SO',
                                 fill='DodgerBlue2')
         self.napis_na_koncu2 = self.plosca.create_text(Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, Gui.ROB + 1/2 * Gui.VELIKOST_STRANICE_PLOSCE, font=('fixedsys', 50), text='{}'.format(zmagovalec),
-                                fill='red3')
+                                fill='red')
 
 
 
@@ -441,12 +441,12 @@ if __name__ == "__main__":
     # Argument --debug, ki vklopi sporočila o tem, kaj se dogaja
     parser.add_argument('--debug',
                         action='store_true',
-                        help='vklopi sporoÄčila o dogajanju')
+                        help='vklopi sporočila o dogajanju')
 
     # Obdelamo argumente iz ukazne vrstice
     args = parser.parse_args()
 
-    # Vklopimo sporoÄila, še je uporabnik podal --debug
+    # Vklopimo sporočila, če je uporabnik podal --debug
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
 
